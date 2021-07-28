@@ -20,7 +20,7 @@ class ConsoleApp(MDApp):
     console = None
 
     rundown_switch_dict = {}
-#
+
     def build(self):
         InewsPullSortSaveGB.app = InewsPullSortSaveLK.app = InewsPullSortSaveTM.app = InewsPullSortSaveLW.app = self
 
@@ -45,9 +45,10 @@ class ConsoleApp(MDApp):
         t.start()
 
     def send_to_aws(self, rundown, local_dir, export_path, color):
+        repeat_freq = int(eval('self.root.ids.repeat_in_seconds_' + local_dir[8:10]).text)
         upload_to_aws('exports/pv/' + export_path + '.json', 'rundowns', 'pv/' + export_path)
         upload_to_aws('exports/sv/' + export_path + '.json', 'rundowns', 'sv/' + export_path)
-        Clock.schedule_once(lambda dt: self.countdown(31, 'repeat', rundown, local_dir, export_path, color), 0)
+        Clock.schedule_once(lambda dt: self.countdown(repeat_freq, 'repeat', rundown, local_dir, export_path, color), 0)
         self.console_log(local_dir[8:], color + "Uploading json files to AWS[/color]")
 
     def countdown(self, num, cmd, rundown, local_dir, output, color):

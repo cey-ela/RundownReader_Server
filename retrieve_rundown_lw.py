@@ -175,11 +175,7 @@ class InewsPullSortSaveLW:
                         # If True it adds 'floated' key to 'storyLine' dictionary and sets its value it value to True
                         break_out_flag = True
                         break
-                    #     story_dict["floated"] = True
-                    #     # OMIT?
-                    # elif "float" not in (line.decode()).strip() and "<meta" in (line.decode()).strip():
-                    #     # Set 'floated' to False if so
-                    #     story_dict["floated"] = False
+
 
                     # Check if 'break' is in 'meta' line of story.
                     if "break" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
@@ -263,15 +259,14 @@ class InewsPullSortSaveLW:
                             story_dict[key] = value
 
                 if not break_out_flag:
-
                     # Append story_dict to 'data' list
                     self.data.append(story_dict)
 
-                    # Close story file
-                    story_file.close()
+                # Close story file
+                story_file.close()
 
-                    # 8) Deletes the file we just read as it's no longer needed
-                    os.remove(local_dir + story_id_title)
+                # 8) Deletes the file we just read as it's no longer needed
+                os.remove(local_dir + story_id_title)
 
     # ## ### #### TIMINGS TIMINGS TIMINGS TIMINGS #### ### ## #
     # ## ### #### TIMINGS TIMINGS TIMINGS TIMINGS #### ### ## #

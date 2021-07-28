@@ -264,11 +264,11 @@ class InewsPullSortSaveLK:
                     # Append story_dict to 'data' list
                     self.data.append(story_dict)
 
-                    # Close story file
-                    story_file.close()
+                # Close story file
+                story_file.close()
 
-                    # 8) Deletes the file we just read as it's no longer needed
-                    os.remove(local_dir + story_id_title)
+                # 8) Deletes the file we just read as it's no longer needed
+                os.remove(local_dir + story_id_title)
 
     # ## ### #### TIMINGS TIMINGS TIMINGS TIMINGS #### ### ## #
     # ## ### #### TIMINGS TIMINGS TIMINGS TIMINGS #### ### ## #

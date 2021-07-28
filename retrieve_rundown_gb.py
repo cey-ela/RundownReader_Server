@@ -155,6 +155,7 @@ class InewsPullSortSaveGB:
 
         # Cycle through and open each newly created story file
         for story_id_title in self.story_ids:
+            break_out_flag = False
             with open(local_dir + story_id_title, "rb") as story_file:
 
                 # File will now have relevant contents stripped, sanitised and placed into this dict:
@@ -170,11 +171,9 @@ class InewsPullSortSaveGB:
                     # TODO: refactor these float and break keys to not have elif/False outcomes
                     if "float" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
                         # If True it adds 'floated' key to 'storyLine' dictionary and sets its value it value to True
-                        story_dict["floated"] = True
-                        # OMIT?
-                    elif "float" not in (line.decode()).strip() and "<meta" in (line.decode()).strip():
-                        # Set 'floated' to False if so
-                        story_dict["floated"] = False
+                        break_out_flag = True
+                        break
+
 
                     # Check if 'break' is in 'meta' line of story.
                     if "break" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
@@ -257,8 +256,9 @@ class InewsPullSortSaveGB:
                         else:
                             story_dict[key] = value
 
-            # Append story_dict to 'data' list
-            self.data.append(story_dict)
+            if not break_out_flag:
+                # Append story_dict to 'data' list
+                self.data.append(story_dict)
 
             # Close story file
             story_file.close()
@@ -296,7 +296,7 @@ class InewsPullSortSaveGB:
                 story_dict['totaltime'] = ""
 
             # Give floated stories or blank totaltime's a readable MM:SS format in the TIMES list, or append true time
-            if story_dict['floated'] or story_dict['totaltime'] == "":
+            if story_dict['totaltime'] == "":
                 self.times_list.append("00:00")
             else:
                 self.times_list.append(story_dict['totaltime'])
@@ -364,7 +364,7 @@ class InewsPullSortSaveGB:
         for index, story_dict in enumerate(self.data):
 
             # Assign updated backtimes to each story
-            if story_dict['floated'] is False and story_dict['backtime'] == "":
+            if story_dict['backtime'] == "":
                 story_dict['backtime'] = self.backtimes_calculated[self.data.index(story_dict)]
 
             # Convert the hard backtime's to HH:MM:SS from seconds
