@@ -14,7 +14,7 @@ from func_timeout import func_timeout, FunctionTimedOut
 from email_notification import email_error_notification as een
 
 
-class InewsPullSortSaveTM:
+class InewsPullSortSaveLW:
     app = None
     console = None
     epoch_time = int(time.time())
@@ -30,9 +30,8 @@ class InewsPullSortSaveTM:
         self.backtimes_calculated = []  # Final backtime list. Appended in reverse by subtracting time_list elements from hard_backtimes lst
 
     def init_process(self, inews_path, local_dir, filename, color):
-        ## 1ST
+        # 1ST
         self.app.console_log(filename, color + 'Connecting...[/color]')
-
         try:
             func_timeout(30, self.pull_xml_via_ftp, args=(inews_path, local_dir, filename, color))
 
@@ -156,6 +155,7 @@ class InewsPullSortSaveTM:
         """
 
         # Cycle through and open each newly created story file
+
         for story_id_title in self.story_ids:
             break_out_flag = False
             with open(local_dir + story_id_title, "rb") as story_file:
@@ -245,7 +245,7 @@ class InewsPullSortSaveTM:
                         if 'gt;' in value:
                             value = value.replace('gt;', '')
 
-                        # In any time values present (excluding complex backtime), convert value to MM:SS format
+                        ## In any time values present (excluding complex backtime), convert value to MM:SS format
                         # TOTALTIME is importantly converted here
                         if "time" in key and key != "backtime":
                             try:
@@ -257,15 +257,15 @@ class InewsPullSortSaveTM:
                         else:
                             story_dict[key] = value
 
-            if not break_out_flag:
-                # Append story_dict to 'data' list
-                self.data.append(story_dict)
+                if not break_out_flag:
+                    # Append story_dict to 'data' list
+                    self.data.append(story_dict)
 
-            # Close story file
-            story_file.close()
+                # Close story file
+                story_file.close()
 
-            # 8) Deletes the file we just read as it's no longer needed
-            os.remove(local_dir + story_id_title)
+                # 8) Deletes the file we just read as it's no longer needed
+                os.remove(local_dir + story_id_title)
 
     # ## ### #### TIMINGS TIMINGS TIMINGS TIMINGS #### ### ## #
     # ## ### #### TIMINGS TIMINGS TIMINGS TIMINGS #### ### ## #
@@ -297,6 +297,7 @@ class InewsPullSortSaveTM:
                 story_dict['totaltime'] = ""
 
             # Give floated stories or blank totaltime's a readable MM:SS format in the TIMES list, or append true time
+            # if story_dict['floated'] or story_dict['totaltime'] == "":
             if story_dict['totaltime'] == "":
                 self.times_list.append("00:00")
             else:
@@ -365,14 +366,13 @@ class InewsPullSortSaveTM:
         for index, story_dict in enumerate(self.data):
 
             # Assign updated backtimes to each story
+            # if story_dict['floated'] is False and story_dict['backtime'] == "":
             if story_dict['backtime'] == "":
                 story_dict['backtime'] = self.backtimes_calculated[self.data.index(story_dict)]
 
             # Convert the hard backtime's to HH:MM:SS from seconds
             if "@" in story_dict["backtime"]:
                 story_dict["backtime"] = str(datetime.timedelta(seconds=int(story_dict["backtime"].strip('@'))))
-
-
 
             try:
                 # Alongside the HH:MM:SS backtime there is a seconds from midnight key/value
@@ -388,7 +388,6 @@ class InewsPullSortSaveTM:
                 story_dict["seconds"] = 0
 
             story_dict['focus'] = False
-
 
         # Rundown can be divided into Item sections. E.g. 1., 2., 3... This is used to skip through the list in
         # scrollview setting up swipe between items when in page view
@@ -450,7 +449,6 @@ class InewsPullSortSaveTM:
                 if story_dict['page'][-2:] == '00':
                     slices.append(index)
 
-
         newer_dicts = []
         # Using the current and next index from slice, attempt to store chunks
         # of self.data in new_dicts
@@ -460,16 +458,12 @@ class InewsPullSortSaveTM:
         if not newer_dicts[-1]:
             newer_dicts.pop()
 
-
-
         with open('exports/pv/' + filename + '.json', 'w') as outfile:
             outfile.write(json.dumps(newer_dicts, indent=4))
 
-
-
-#inews = InewsDataPull()
+# inews = InewsDataPull()
 # inews.init_process("*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/wed/", "test_rundown")
-#inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
+# inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
 
 # generate_json("CTS.TX.0600", "0600")
 # generate_json("CTS.TX.0630", "0630")
@@ -486,3 +480,4 @@ class InewsPullSortSaveTM:
 # generate_json("*GMB-LK.*LK.TX.LORRAINE", "test_rundown")
 # generate_json("*TM.*OUTPUT.RUNORDERS.THURSDAY.RUNORDER", "stories/tm/thu/", "test_rundown")
 # generate_json("*LW.RUNORDERS.THURSDAY", "test_rundown")
+
