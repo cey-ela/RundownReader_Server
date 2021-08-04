@@ -9,7 +9,7 @@ from retrieve_rundown_lk import InewsPullSortSaveLK
 from retrieve_rundown_tm import InewsPullSortSaveTM
 from retrieve_rundown_lw import InewsPullSortSaveLW
 from s3_connection import upload_to_aws
-
+from func_timeout import func_timeout, FunctionTimedOut
 
 class ConsoleApp(MDApp):
     ready = False
@@ -30,6 +30,8 @@ class ConsoleApp(MDApp):
             self.start_process(switch, rundown, local_dir, export_path, color)
 
     def start_process(self, switch, rundown, local_dir, export_path, color):
+
+
 
         if self.rundown_switch_dict[export_path]:
             t = Thread(target=self.collect_rundown, args=(rundown, local_dir, export_path, color))
