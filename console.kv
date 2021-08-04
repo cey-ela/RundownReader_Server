@@ -53,11 +53,33 @@ MDBoxLayout:
             MDBoxLayout
                 orientation: 'vertical'
 
-                WhitLbl
-                    text: '  GMB'
-                    halign: 'center'
-                    font_style: 'H6'
-                    text_color: .9,.9,.9
+                MDBoxLayout
+
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        Widget
+                        MDBoxLayout
+                            size_hint_x: None
+                            width: 120
+                            Label
+                                text: 'Frequency:'
+                                font_size: 12
+                            TextInput
+                                id: repeat_in_seconds_gb
+                                size_hint: None, None
+                                width: 45
+                                height: 30
+                                text: '30'
+                                background_color: .75, .75, .75
+                        Widget
+
+                    WhitLbl
+                        text: '  GMB'
+                        halign: 'center'
+                        font_style: 'H6'
+                        text_color: .9,.9,.9
+
+                    Widget
 
 
                 MDBoxLayout
@@ -118,11 +140,34 @@ MDBoxLayout:
             # LK Box
             MDBoxLayout
                 orientation: 'vertical'
-                WhitLbl
-                    text: 'LK'
-                    halign: 'center'
-                    font_style: 'H6'
-                    text_color: .9,.9,.9
+                MDBoxLayout
+
+                    MDBoxLayout:
+                        orientation: 'vertical'
+
+                        Widget
+                        MDBoxLayout
+                            size_hint_x: None
+                            width: 120
+                            Label
+                                text: 'Frequency:'
+                                font_size: 12
+                            TextInput
+                                id: repeat_in_seconds_lk
+                                size_hint: None, None
+                                width: 45
+                                height: 30
+                                text: '30'
+                                background_color: .75, .75, .75
+                        Widget
+
+                    WhitLbl
+                        text: '  LK'
+                        halign: 'center'
+                        font_style: 'H6'
+                        text_color: .9,.9,.9
+
+                    Widget
 
                 MDBoxLayout
 
@@ -151,11 +196,37 @@ MDBoxLayout:
             MDBoxLayout
                 orientation: 'vertical'
 
-                WhitLbl
-                    text: 'TM'
-                    halign: 'center'
-                    font_style: 'H6'
-                    text_color: .9,.9,.9
+                MDBoxLayout
+
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        Widget
+                        MDBoxLayout
+                            size_hint_x: None
+                            width: 200
+                        Widget
+                        MDBoxLayout
+                            size_hint_x: None
+                            width: 120
+                            Label
+                                text: 'Frequency:'
+                                font_size: 12
+                            TextInput
+                                id: repeat_in_seconds_tm
+                                size_hint: None, None
+                                width: 45
+                                height: 30
+                                text: '30'
+                                background_color: .75, .75, .75
+                        Widget
+
+                    WhitLbl
+                        text: '  TM'
+                        halign: 'center'
+                        font_style: 'H6'
+                        text_color: .9,.9,.9
+
+                    Widget
 
                 MDBoxLayout
                     Widget
@@ -210,11 +281,33 @@ MDBoxLayout:
             MDBoxLayout
                 orientation: 'vertical'
 
-                WhitLbl
-                    text: 'LW'
-                    halign: 'center'
-                    font_style: 'H6'
-                    text_color: .9,.9,.9
+                MDBoxLayout
+
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        Widget
+                        MDBoxLayout
+                            size_hint_x: None
+                            width: 120
+                            Label
+                                text: 'Frequency:'
+                                font_size: 12
+                            TextInput
+                                id: repeat_in_seconds_lw
+                                size_hint: None, None
+                                width: 45
+                                height: 30
+                                text: '30'
+                                background_color: .75, .75, .75
+                        Widget
+
+                    WhitLbl
+                        text: '  LW'
+                        halign: 'center'
+                        font_style: 'H6'
+                        text_color: .9,.9,.9
+
+                    Widget
 
                 MDBoxLayout
                     Widget
@@ -244,7 +337,7 @@ MDBoxLayout:
                             text: "WED"
                             text_color: 0, 1, 0
                         MDSwitch:
-                            
+
                             on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.WEDNESDAY", "stories/lw/wed/", "lw/lw_wed", '   [color=00ff00]')
 
                     MDBoxLayout:
@@ -274,11 +367,33 @@ MDBoxLayout:
             MDBoxLayout
                 orientation: 'vertical'
 
-                WhitLbl
-                    text: 'CUSTOM'
-                    halign: 'center'
-                    font_style: 'H6'
-                    text_color: .9,.9,.9
+                MDBoxLayout
+
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        Widget
+                        MDBoxLayout
+                            size_hint_x: None
+                            width: 120
+                            Label
+                                text: 'Frequency:'
+                                font_size: 12
+                            TextInput
+                                id: repeat_in_seconds_cs
+                                size_hint: None, None
+                                width: 45
+                                height: 30
+                                text: '30'
+                                background_color: .75, .75, .75
+                        Widget
+
+                    WhitLbl
+                        text: 'CUSTOM'
+                        halign: 'center'
+                        font_style: 'H6'
+                        text_color: .9,.9,.9
+
+                    Widget
 
                 MDBoxLayout
                     Widget

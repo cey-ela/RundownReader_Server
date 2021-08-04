@@ -9,7 +9,7 @@ from retrieve_rundown_lk import InewsPullSortSaveLK
 from retrieve_rundown_tm import InewsPullSortSaveTM
 from retrieve_rundown_lw import InewsPullSortSaveLW
 from s3_connection import upload_to_aws
-
+from func_timeout import func_timeout, FunctionTimedOut
 
 class ConsoleApp(MDApp):
     ready = False
@@ -20,7 +20,7 @@ class ConsoleApp(MDApp):
     console = None
 
     rundown_switch_dict = {}
-#
+
     def build(self):
         InewsPullSortSaveGB.app = InewsPullSortSaveLK.app = InewsPullSortSaveTM.app = InewsPullSortSaveLW.app = self
 
@@ -30,6 +30,8 @@ class ConsoleApp(MDApp):
             self.start_process(switch, rundown, local_dir, export_path, color)
 
     def start_process(self, switch, rundown, local_dir, export_path, color):
+
+
 
         if self.rundown_switch_dict[export_path]:
             t = Thread(target=self.collect_rundown, args=(rundown, local_dir, export_path, color))
@@ -45,9 +47,10 @@ class ConsoleApp(MDApp):
         t.start()
 
     def send_to_aws(self, rundown, local_dir, export_path, color):
+        repeat_freq = int(eval('self.root.ids.repeat_in_seconds_' + local_dir[8:10]).text)
         upload_to_aws('exports/pv/' + export_path + '.json', 'rundowns', 'pv/' + export_path)
         upload_to_aws('exports/sv/' + export_path + '.json', 'rundowns', 'sv/' + export_path)
-        Clock.schedule_once(lambda dt: self.countdown(31, 'repeat', rundown, local_dir, export_path, color), 0)
+        Clock.schedule_once(lambda dt: self.countdown(repeat_freq, 'repeat', rundown, local_dir, export_path, color), 0)
         self.console_log(local_dir[8:], color + "Uploading json files to AWS[/color]")
 
     def countdown(self, num, cmd, rundown, local_dir, output, color):
