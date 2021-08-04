@@ -11,12 +11,14 @@ from itertools import cycle
 from kivy import properties as kp
 import time
 from func_timeout import func_timeout, FunctionTimedOut
+from email_notification import email_error_notification as een
 
 
 class InewsPullSortSaveLK:
     app = None
     console = None
     epoch_time = int(time.time())
+    timeout_counter = 0
 
     def __init__(self):
         self.story_ids = []  # list of story_id titles in string form. E.g. 'E45RF34'
@@ -36,17 +38,18 @@ class InewsPullSortSaveLK:
 
         except FunctionTimedOut:
             self.app.console_log(filename, color + '...RETR cmd hung, retrying...[/color]')
-            print('RETR cmd hung, retrying' + str(datetime.datetime.now()))
+            print('RETR cmd hung, retrying ' + str(datetime.datetime.now()))
             return self.init_process(inews_path, local_dir, filename, color)
+
 
         except TimeoutError:
             self.app.console_log(filename, color + '...connection to iNews timeout, check connection...[/color]')
-            print('General IP connection failure' + str(datetime.datetime.now()))
+            print('General IP connection failure ' + str(datetime.datetime.now()))
             return self.init_process(inews_path, local_dir, filename, color)
 
         except all_errors:
-            print('FTP - general error\n' * 10)
-            self.app.console_log(filename, color + 'FTP error..trying again...[/color]' )
+            print('FTP - general error ' + str(datetime.datetime.now()))
+            self.app.console_log(filename, color + 'FTP error..trying again...[/color]')
             return self.init_process(inews_path, local_dir, filename, color)
 
         ## 2ND
@@ -73,7 +76,7 @@ class InewsPullSortSaveLK:
 
     def pull_xml_via_ftp(self, inews_path, local_dir, filename, color):
         counter = 0
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
+        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
             inews_details = json.load(aws_creds)
             user = inews_details[1]['user']
             passwd = inews_details[1]['passwd']
