@@ -480,3 +480,4 @@ class InewsPullSortSaveLW:
 # generate_json("*GMB-LK.*LK.TX.LORRAINE", "test_rundown")
 # generate_json("*TM.*OUTPUT.RUNORDERS.THURSDAY.RUNORDER", "stories/tm/thu/", "test_rundown")
 # generate_json("*LW.RUNORDERS.THURSDAY", "test_rundown")
+
