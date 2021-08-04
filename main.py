@@ -18,7 +18,7 @@ class ConsoleApp(MDApp):
     tm_log = ['']
     lw_log = ['']
     console = None
-
+    #
     rundown_switch_dict = {}
 
     def build(self):
