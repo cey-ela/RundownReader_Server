@@ -11,14 +11,12 @@ from itertools import cycle
 from kivy import properties as kp
 import time
 from func_timeout import func_timeout, FunctionTimedOut
-from email_notification import email_error_notification as een
 
 
 class InewsPullSortSaveLW:
     app = None
     console = None
     epoch_time = int(time.time())
-    timeout_counter = 0
 
     def __init__(self):
         self.story_ids = []  # list of story_id titles in string form. E.g. 'E45RF34'
@@ -32,23 +30,24 @@ class InewsPullSortSaveLW:
     def init_process(self, inews_path, local_dir, filename, color):
         # 1ST
         self.app.console_log(filename, color + 'Connecting...[/color]')
+
         try:
             func_timeout(30, self.pull_xml_via_ftp, args=(inews_path, local_dir, filename, color))
 
         except FunctionTimedOut:
             self.app.console_log(filename, color + '...RETR cmd hung, retrying...[/color]')
-            print('RETR cmd hung, retrying ' + str(datetime.datetime.now()))
+            print('RETR cmd hung, retrying')
             return self.init_process(inews_path, local_dir, filename, color)
 
         except TimeoutError:
             self.app.console_log(filename, color + '...connection to iNews timeout, check connection...[/color]')
-            print('General IP connection failure ' + str(datetime.datetime.now()))
+            print('General IP connection failure')
             return self.init_process(inews_path, local_dir, filename, color)
 
-        except all_errors:
-            print('FTP - general error ' + str(datetime.datetime.now()))
-            self.app.console_log(filename, color + 'FTP error..trying again...[/color]')
-            return self.init_process(inews_path, local_dir, filename, color)
+        # except all_errors:
+        #     print('FTP - general error\n' * 10)
+        #     self.app.console_log(filename, color + 'FTP error..trying again...[/color]')
+        #     return self.init_process(inews_path, local_dir, filename, color)
 
         # 2ND
         self.convert_xml_to_dict(local_dir)
@@ -74,7 +73,8 @@ class InewsPullSortSaveLW:
 
     def pull_xml_via_ftp(self, inews_path, local_dir, filename, color):
         counter = 0
-        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
+        # with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
             inews_details = json.load(aws_creds)
             user = inews_details[1]['user']
             passwd = inews_details[1]['passwd']
@@ -154,6 +154,7 @@ class InewsPullSortSaveLW:
         We only want some meta data from line 3, story_id form line 7 and then everything between /fields.
         """
 
+
         # Cycle through and open each newly created story file
 
         for story_id_title in self.story_ids:
@@ -175,6 +176,7 @@ class InewsPullSortSaveLW:
                         # If True it adds 'floated' key to 'storyLine' dictionary and sets its value it value to True
                         break_out_flag = True
                         break
+
 
                     # Check if 'break' is in 'meta' line of story.
                     if "break" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
@@ -374,6 +376,8 @@ class InewsPullSortSaveLW:
             if "@" in story_dict["backtime"]:
                 story_dict["backtime"] = str(datetime.timedelta(seconds=int(story_dict["backtime"].strip('@'))))
 
+
+
             try:
                 # Alongside the HH:MM:SS backtime there is a seconds from midnight key/value
                 if story_dict["backtime"]:
@@ -388,6 +392,7 @@ class InewsPullSortSaveLW:
                 story_dict["seconds"] = 0
 
             story_dict['focus'] = False
+
 
         # Rundown can be divided into Item sections. E.g. 1., 2., 3... This is used to skip through the list in
         # scrollview setting up swipe between items when in page view
@@ -449,6 +454,7 @@ class InewsPullSortSaveLW:
                 if story_dict['page'][-2:] == '00':
                     slices.append(index)
 
+
         newer_dicts = []
         # Using the current and next index from slice, attempt to store chunks
         # of self.data in new_dicts
@@ -458,12 +464,16 @@ class InewsPullSortSaveLW:
         if not newer_dicts[-1]:
             newer_dicts.pop()
 
+
+
         with open('exports/pv/' + filename + '.json', 'w') as outfile:
             outfile.write(json.dumps(newer_dicts, indent=4))
 
-# inews = InewsDataPull()
+
+
+#inews = InewsDataPull()
 # inews.init_process("*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/wed/", "test_rundown")
-# inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
+#inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
 
 # generate_json("CTS.TX.0600", "0600")
 # generate_json("CTS.TX.0630", "0630")
@@ -480,4 +490,3 @@ class InewsPullSortSaveLW:
 # generate_json("*GMB-LK.*LK.TX.LORRAINE", "test_rundown")
 # generate_json("*TM.*OUTPUT.RUNORDERS.THURSDAY.RUNORDER", "stories/tm/thu/", "test_rundown")
 # generate_json("*LW.RUNORDERS.THURSDAY", "test_rundown")
-

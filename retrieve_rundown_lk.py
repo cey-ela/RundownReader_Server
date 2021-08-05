@@ -76,6 +76,7 @@ class InewsPullSortSaveLK:
 
     def pull_xml_via_ftp(self, inews_path, local_dir, filename, color):
         counter = 0
+        # with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
         with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
             inews_details = json.load(aws_creds)
             user = inews_details[1]['user']

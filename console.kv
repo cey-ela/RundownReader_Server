@@ -1,3 +1,126 @@
+<AutoTI@TextInput>
+    multiline: False
+
+
+<Automate@MDBoxLayout>
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgb: .6,.6,.6
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+
+    Spacer
+    Widget
+    MDBoxLayout
+        Widget
+        MDSwitch
+            id: auto_switch
+            on_active: app.automation_switches[root.tag] = self.active
+        Widget
+
+    MDBoxLayout
+        Label:
+            text: '1:'
+        AutoTI
+            id: start_one
+            text: 'start'
+            on_text: app.automation[root.tag][0]['start'] = self.text
+        Label:
+            size_hint_x: .21
+            text: '-'
+        AutoTI
+            id: finish_one
+            text: 'finish'
+            on_text: app.automation[root.tag][0]['finish'] = self.text
+        Label
+            text: 'freq'
+
+        AutoTI
+            id: freq_one
+            text: '300'
+            on_text: app.automation[root.tag][0]['freq'] = self.text
+
+        Widget
+            size_hint_x: .1
+
+    Spacer2
+    MDBoxLayout
+        Label:
+            text: '2:'
+        AutoTI
+            id: start_two
+            text: 'start'
+            on_text: app.automation[root.tag][1]['start'] = self.text
+        Label:
+            size_hint_x: .21
+            text: '-'
+        AutoTI
+            id: finish_two
+            text: 'finish'
+            on_text: app.automation[root.tag][1]['finish'] = self.text
+        Label
+            text: 'freq'
+        AutoTI
+            id: freq_two
+            text: '300'
+            on_text: app.automation[root.tag][1]['freq'] = self.text
+        Widget
+            size_hint_x: .1
+
+    Spacer2
+    MDBoxLayout
+        Label:
+            text: '1:'
+        AutoTI
+            id: start_three
+            text: 'start'
+            on_text: app.automation[root.tag][2]['start'] = self.text
+        Label:
+            size_hint_x: .21
+            text: '-'
+        AutoTI
+            id: finish_three
+            text: 'finish'
+            on_text: app.automation[root.tag][2]['finish'] = self.text
+        Label
+            text: 'freq'
+        AutoTI
+            id: freq_three
+            text: '300'
+            on_text: app.automation[root.tag][2]['freq'] = self.text
+        Widget
+            size_hint_x: .1
+
+    Spacer2
+    MDBoxLayout
+        Label:
+            text: '1:'
+        AutoTI
+            id: start_four
+            text: 'start'
+            on_text: app.automation[root.tag][3]['start'] = self.text
+        Label:
+            size_hint_x: .21
+            text: '-'
+        AutoTI
+            id: finish_four
+            text: 'finish'
+            on_text: app.automation[root.tag][3]['finish'] = self.text
+        Label
+            text: 'freq'
+        AutoTI
+            id: freq_four
+            text: '300'
+            on_text: app.automation[root.tag][3]['freq'] = self.text
+            on_text: print(app.automation)
+        Widget
+            size_hint_x: .1
+
+    Spacer2
+
+
 <Spacer@Widget>
     size_hint_y: None
     height: 5
@@ -7,6 +130,10 @@
         Line:
             width: 2
             rectangle: self.x, self.y, self.width, self.height
+
+<Spacer2@Widget>
+    size_hint_y: None
+    height: 8
 
 #
 <ConsoleWindow@MDLabel>
@@ -40,7 +167,35 @@ MDBoxLayout:
             #source: 'assets/bg.png'
 
 
-    # Split the screen in half
+    MDBoxLayout
+        size_hint_y: .05
+        Label:
+            text: 'START'
+            canvas.before:
+                Color:
+                    rgb: .85,.85,.85
+                Line:
+                    width: 4
+                    rectangle: self.x, self.y, self.width, self.height
+        Label:
+            text: 'AUTOMATE'
+            canvas.before:
+                Color:
+                    rgb: .85,.85,.85
+                Line:
+                    width: 4
+                    rectangle: self.x, self.y, self.width, self.height
+        Label:
+            text: 'LOG'
+            canvas.before:
+                Color:
+                    rgb: .85,.85,.85
+                Line:
+                    width: 4
+                    rectangle: self.x, self.y, self.width, self.height
+
+
+    # Split the screen in three
     MDBoxLayout
 
         # Left pane / buttons
@@ -445,6 +600,26 @@ MDBoxLayout:
                     height: 20
 
             Spacer
+
+        # Automate, centre column
+        MDBoxLayout:
+            orientation: 'vertical'
+            Automate
+                id: auto_gb
+                tag: 'gb'
+            Automate
+                id: auto_lk
+                tag: 'lk'
+            Automate
+                id: auto_tm
+                tag: 'tm'
+            Automate
+                id: auto_lw
+                tag: 'lw'
+            Automate
+                id: auto_cs
+            Spacer
+
 
         # Right pane / console
         MDBoxLayout
