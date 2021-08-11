@@ -9,6 +9,7 @@ from retrieve_rundown_gb import InewsPullSortSaveGB
 from retrieve_rundown_lk import InewsPullSortSaveLK
 from retrieve_rundown_tm import InewsPullSortSaveTM
 from retrieve_rundown_lw import InewsPullSortSaveLW
+from retrieve_rundown_cs import InewsPullSortSaveCS
 from s3_connection import upload_to_aws
 from func_timeout import func_timeout, FunctionTimedOut
 from datetime import datetime
@@ -21,22 +22,26 @@ class ConsoleApp(MDApp):
     lk_log = ['']
     tm_log = ['']
     lw_log = ['']
+    cs_log = ['']
     console = None
 
     automation_switches = {'gb': False,
                            'lk': False,
                            'tm': False,
-                           'lw': False}
+                           'lw': False,
+                           'cs': False}
 
     automation = {'gb': [{}, {}, {}, {}],
                   'lk': [{}, {}, {}, {}],
                   'tm': [{}, {}, {}, {}],
-                  'lw': [{}, {}, {}, {}]}
+                  'lw': [{}, {}, {}, {}],
+                  'cs': [{}, {}, {}, {}]}
 
     rundown_switch_dict = {}
 
     def build(self):
-        InewsPullSortSaveGB.app = InewsPullSortSaveLK.app = InewsPullSortSaveTM.app = InewsPullSortSaveLW.app = self
+        InewsPullSortSaveGB.app = InewsPullSortSaveLK.app = InewsPullSortSaveTM.app = InewsPullSortSaveLW.app = \
+            InewsPullSortSaveCS.app = self
 
     def rundown_switch(self, switch, rundown, local_dir, export_path, color):
         self.rundown_switch_dict[export_path] = switch
