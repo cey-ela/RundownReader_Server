@@ -73,8 +73,8 @@ class InewsPullSortSaveCS:
 
     def pull_xml_via_ftp(self, inews_path, local_dir, filename, color):
         counter = 0
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
-        # with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+
+        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
             inews_details = json.load(aws_creds)
             user = inews_details[1]['user']
             passwd = inews_details[1]['passwd']
@@ -113,11 +113,8 @@ class InewsPullSortSaveCS:
         # TODO: NOTE - focus, brk, and floated default false values removed, try and work App without these
         """ A bulky method that in summary, takes each raw FTP NSML story file and converts it to a dict.
         Stripping out the bits we don't need and reformatting some dict key/values along the way.
-
         By the end we are left with a neat list of dicts (self.data)
-
         NSML (XML) Example:
-
         <nsml version="-//AVID//DTD NSML 1.0//EN">
         <head>
         3<meta rate=180 float>
@@ -150,10 +147,8 @@ class InewsPullSortSaveCS:
         <f id=gfxprep></f>
         <f id=vartm-01></f>
         </fields>
-
         We only want some meta data from line 3, story_id form line 7 and then everything between /fields.
         """
-
 
         # Cycle through and open each newly created story file
 
@@ -176,7 +171,6 @@ class InewsPullSortSaveCS:
                         # If True it adds 'floated' key to 'storyLine' dictionary and sets its value it value to True
                         break_out_flag = True
                         break
-
 
                     # Check if 'break' is in 'meta' line of story.
                     if "break" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
@@ -376,11 +370,10 @@ class InewsPullSortSaveCS:
             if "@" in story_dict["backtime"]:
                 story_dict["backtime"] = str(datetime.timedelta(seconds=int(story_dict["backtime"].strip('@'))))
 
-
-
             try:
                 # Alongside the HH:MM:SS backtime there is a seconds from midnight key/value
                 if story_dict["backtime"]:
+
 
                     story_dict["seconds"] = sum(x * int(t) for x, t in
                                                 zip([3600, 60, 1], story_dict["backtime"].split(":")))
@@ -392,7 +385,6 @@ class InewsPullSortSaveCS:
                 story_dict["seconds"] = 0
 
             story_dict['focus'] = False
-
 
         # Rundown can be divided into Item sections. E.g. 1., 2., 3... This is used to skip through the list in
         # scrollview setting up swipe between items when in page view
@@ -454,7 +446,6 @@ class InewsPullSortSaveCS:
                 if story_dict['page'][-2:] == '00':
                     slices.append(index)
 
-
         newer_dicts = []
         # Using the current and next index from slice, attempt to store chunks
         # of self.data in new_dicts
@@ -464,16 +455,12 @@ class InewsPullSortSaveCS:
         if not newer_dicts[-1]:
             newer_dicts.pop()
 
-
-
         with open('exports/pv/' + filename + '.json', 'w') as outfile:
             outfile.write(json.dumps(newer_dicts, indent=4))
 
-
-
-#inews = InewsDataPull()
+# inews = InewsDataPull()
 # inews.init_process("*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/wed/", "test_rundown")
-#inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
+# inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
 
 # generate_json("CTS.TX.0600", "0600")
 # generate_json("CTS.TX.0630", "0630")
