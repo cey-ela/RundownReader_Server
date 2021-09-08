@@ -73,8 +73,8 @@ class InewsPullSortSaveLW:
 
     def pull_xml_via_ftp(self, inews_path, local_dir, filename, color):
         counter = 0
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
-        # with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
+        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
             inews_details = json.load(aws_creds)
             user = inews_details[1]['user']
             passwd = inews_details[1]['passwd']
@@ -113,11 +113,8 @@ class InewsPullSortSaveLW:
         # TODO: NOTE - focus, brk, and floated default false values removed, try and work App without these
         """ A bulky method that in summary, takes each raw FTP NSML story file and converts it to a dict.
         Stripping out the bits we don't need and reformatting some dict key/values along the way.
-
         By the end we are left with a neat list of dicts (self.data)
-
         NSML (XML) Example:
-
         <nsml version="-//AVID//DTD NSML 1.0//EN">
         <head>
         3<meta rate=180 float>
@@ -150,7 +147,6 @@ class InewsPullSortSaveLW:
         <f id=gfxprep></f>
         <f id=vartm-01></f>
         </fields>
-
         We only want some meta data from line 3, story_id form line 7 and then everything between /fields.
         """
 
@@ -247,6 +243,7 @@ class InewsPullSortSaveLW:
                         if 'gt;' in value:
                             value = value.replace('gt;', '')
 
+
                         ## In any time values present (excluding complex backtime), convert value to MM:SS format
                         # TOTALTIME is importantly converted here
                         if "time" in key and key != "backtime":
@@ -315,6 +312,8 @@ class InewsPullSortSaveLW:
             if story_dict['backtime'] != "":
                 self.hard_backtimes.append(story_dict["backtime"])
                 self.backtime_pos_list.append(story_dict["backtime"])
+
+
 
     # Each dict in sorted list contributes either a 00:00 or valid MM:SS to TIMES list
     # It also contributes either a blank "" or valid backtime (in seconds) to BACKTIME_POS
