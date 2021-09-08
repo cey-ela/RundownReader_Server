@@ -473,7 +473,7 @@ class InewsPullSortSaveLK:
 
 
 #inews = InewsDataPull()
-# inews.init_process("*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/wed/", "test_rundown")
+#a inews.init_process("*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/wed/", "test_rundown")
 #inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
 
 # generate_json("CTS.TX.0600", "0600")
