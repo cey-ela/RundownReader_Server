@@ -1,7 +1,7 @@
 from kivy.config import Config
 
 Config.set('graphics', 'width', '850')
-Config.set('graphics', 'height', '850')
+Config.set('graphics', 'height', '950')
 from threading import Thread
 from kivymd.app import MDApp
 from kivy.clock import Clock
@@ -15,6 +15,7 @@ from func_timeout import func_timeout, FunctionTimedOut
 from datetime import datetime
 from calendar import timegm
 import time
+import json
 
 class ConsoleApp(MDApp):
     ready = False
@@ -31,17 +32,65 @@ class ConsoleApp(MDApp):
                            'lw': False,
                            'cs': False}
 
-    automation = {'gb': [{}, {}, {}, {}],
-                  'lk': [{}, {}, {}, {}],
-                  'tm': [{}, {}, {}, {}],
-                  'lw': [{}, {}, {}, {}],
-                  'cs': [{}, {}, {}, {}]}
+    # automation = {'gb': [{}, {}, {}, {}],
+    #               'lk': [{}, {}, {}, {}],
+    #               'tm': [{}, {}, {}, {}],
+    #               'lw': [{}, {}, {}, {}],
+    #               'cs': [{}, {}, {}, {}]}
+
+    with open('schedule.json') as sched:
+        automation = json.load(sched)
+
+    # automation = {'gb': [{}, {}, {}, {}],
+    #               'lk': [{'start': '07:00', 'finish': '08:45', 'freq': '300'},
+    #                      {'start': '08:45', 'finish': '09:55', 'freq': '30'}, {}, {}],
+    #               'tm': [{}, {}, {}, {}],
+    #               'lw': [{'start': '07:00', 'finish': '12:15', 'freq': '300'},
+    #                      {'start': '12:15', 'finish': '13:25', 'freq': '30'}, {}, {}],
+    #               'cs': [{}, {}, {}, {}]}
+
+    # {'gb': [{}, {}, {}, {}],
+    #  'lk': [{'start': '07:00', 'finish': '08:45', 'freq': '300'},
+    #         {{'start': '08:45', 'finish': '09:55', 'freq': '30'}}, {}, {}],
+    #  'tm': [{}, {}, {}, {}],
+    #  'lw': [{'start': '07:00', 'finish': '12:15', 'freq': '300'},
+    #         {'start': '12:15', 'finish': '13:25', 'freq': '30'}, {}, {}],
+    #  'cs': [{}, {}, {}, {}]}
 
     rundown_switch_dict = {}
 
     def build(self):
         InewsPullSortSaveGB.app = InewsPullSortSaveLK.app = InewsPullSortSaveTM.app = InewsPullSortSaveLW.app = \
             InewsPullSortSaveCS.app = self
+        # self.populate_schedule()
+
+    # def populate_schedule(self):
+    #     with open('schedule.json') as sched:
+    #         schedule = json.load(sched)
+    #
+    #     for prod in self.root.ids:
+    #         # prod[-2:] = production. eg LK, TM
+    #         if 'auto' in prod:
+    #             for input_box in self.root.ids[prod].ids:
+    #                 print(input_box)
+    #                 # self.root.ids[prod].ids[input_box].text = schedule[prod[-2:]][0]
+
+
+
+        # self.root.ids.auto_lk.ids.start_one.text = '07:00'
+        # self.root.ids.auto_lk.ids.finish_one.text = '08:45'
+        # self.root.ids.auto_lk.ids.freq_one.text = '300'
+        # self.root.ids.auto_lk.ids.start_two.text = '08:45'
+        # self.root.ids.auto_lk.ids.finish_two.text = '09:55'
+        # self.root.ids.auto_lk.ids.freq_two.text = '30'
+        #
+        # self.root.ids.auto_lw.ids.start_one.text = '07:00'
+        # self.root.ids.auto_lw.ids.finish_one.text = '12:15'
+        # self.root.ids.auto_lw.ids.freq_one.text = '300'
+        # self.root.ids.auto_lw.ids.start_two.text = '12:15'
+        # self.root.ids.auto_lw.ids.finish_two.text = '13:25'
+        # self.root.ids.auto_lw.ids.freq_two.text = '30'
+
 
     def rundown_switch(self, switch, rundown, local_dir, export_path, color):
         self.rundown_switch_dict[export_path] = switch
@@ -68,6 +117,7 @@ class ConsoleApp(MDApp):
         seconds_midnight = int((now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
 
         if self.automation_switches[production]:
+            print(self.automation)
 
             for d in self.automation[production]:
                 if 'start' in d and 'finish' in d:
@@ -81,7 +131,7 @@ class ConsoleApp(MDApp):
                         print('ZZ')
                 else:
                     print('XX')
-                    return 61
+                    return 3600
 
             return 3600
 
