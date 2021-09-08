@@ -219,6 +219,13 @@ class InewsPullSortSaveTM:
                         value = entry.group(2)
 
                         # Now for some necessary formatting of some key/values
+
+                        if key == 'air-date':
+                            key = 'airdate'
+                            story_dict[key] = value
+
+
+
                         if "total-time" in key:
                             key = 'totaltime'
                             story_dict[key] = value
@@ -256,6 +263,8 @@ class InewsPullSortSaveTM:
                         # Else write key and value as they are
                         else:
                             story_dict[key] = value
+
+
 
             if not break_out_flag:
                 # Append story_dict to 'data' list
@@ -307,11 +316,28 @@ class InewsPullSortSaveTM:
                 # Append empty string
                 self.backtime_pos_list.append("")
 
+            # if story_dict['airdate'] != "":
+            #     air_hour = int(str(datetime.datetime.fromtimestamp(int(story_dict['airdate'])))[11:13])
+            #     air_min = int(str(datetime.datetime.fromtimestamp(int(story_dict['airdate'])))[14:16])
+            #     air_secs = int(str(datetime.datetime.fromtimestamp(int(story_dict['airdate'])))[17:19])
+            #     secs_from_m = '@' + str((air_hour * 3600) + (air_min * 60) + air_secs)
+            #
+            #     self.hard_backtimes.append(secs_from_m)
+            #     self.backtime_pos_list.append(secs_from_m)
+            #     # continue
+            #
+            #     print("SECS: " + secs_from_m)
+
             # If backtime is not an empty string, append to backtime list and backtime_position list
-            # MAKE ELSE?
             if story_dict['backtime'] != "":
+
                 self.hard_backtimes.append(story_dict["backtime"])
                 self.backtime_pos_list.append(story_dict["backtime"])
+
+                print("BACK: " + story_dict['backtime'])
+
+
+
 
     # Each dict in sorted list contributes either a 00:00 or valid MM:SS to TIMES list
     # It also contributes either a blank "" or valid backtime (in seconds) to BACKTIME_POS

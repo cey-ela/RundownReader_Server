@@ -11,14 +11,12 @@ from itertools import cycle
 from kivy import properties as kp
 import time
 from func_timeout import func_timeout, FunctionTimedOut
-from email_notification import email_error_notification as een
 
 
-class InewsPullSortSaveLK:
+class InewsPullSortSaveCS:
     app = None
     console = None
     epoch_time = int(time.time())
-    timeout_counter = 0
 
     def __init__(self):
         self.story_ids = []  # list of story_id titles in string form. E.g. 'E45RF34'
@@ -38,21 +36,20 @@ class InewsPullSortSaveLK:
 
         except FunctionTimedOut:
             self.app.console_log(filename, color + '...RETR cmd hung, retrying...[/color]')
-            print('RETR cmd hung, retrying ' + str(datetime.datetime.now()))
+            print('RETR cmd hung, retrying')
             return self.init_process(inews_path, local_dir, filename, color)
-
 
         except TimeoutError:
             self.app.console_log(filename, color + '...connection to iNews timeout, check connection...[/color]')
-            print('General IP connection failure ' + str(datetime.datetime.now()))
+            print('General IP connection failure')
             return self.init_process(inews_path, local_dir, filename, color)
 
-        except all_errors:
-            print('FTP - general error ' + str(datetime.datetime.now()))
-            self.app.console_log(filename, color + 'FTP error..trying again...[/color]')
-            return self.init_process(inews_path, local_dir, filename, color)
+        # except all_errors:
+        #     print('FTP - general error\n' * 10)
+        #     self.app.console_log(filename, color + 'FTP error..trying again...[/color]')
+        #     return self.init_process(inews_path, local_dir, filename, color)
 
-        ## 2ND
+        # 2ND
         self.convert_xml_to_dict(local_dir)
         self.app.console_log(filename, color + "Converting stories from NSML to local dict[/color]")
 
@@ -76,7 +73,7 @@ class InewsPullSortSaveLK:
 
     def pull_xml_via_ftp(self, inews_path, local_dir, filename, color):
         counter = 0
-        # with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
+
         with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
             inews_details = json.load(aws_creds)
             user = inews_details[1]['user']
@@ -154,6 +151,7 @@ class InewsPullSortSaveLK:
         """
 
         # Cycle through and open each newly created story file
+
         for story_id_title in self.story_ids:
             break_out_flag = False
             with open(local_dir + story_id_title, "rb") as story_file:
@@ -173,11 +171,6 @@ class InewsPullSortSaveLK:
                         # If True it adds 'floated' key to 'storyLine' dictionary and sets its value it value to True
                         break_out_flag = True
                         break
-                    #     story_dict["floated"] = True
-                    #     # OMIT?
-                    # elif "float" not in (line.decode()).strip() and "<meta" in (line.decode()).strip():
-                    #     # Set 'floated' to False if so
-                    #     story_dict["floated"] = False
 
                     # Check if 'break' is in 'meta' line of story.
                     if "break" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
@@ -248,7 +241,7 @@ class InewsPullSortSaveLK:
                         if 'gt;' in value:
                             value = value.replace('gt;', '')
 
-                        # In any time values present (excluding complex backtime), convert value to MM:SS format
+                        ## In any time values present (excluding complex backtime), convert value to MM:SS format
                         # TOTALTIME is importantly converted here
                         if "time" in key and key != "backtime":
                             try:
@@ -300,6 +293,7 @@ class InewsPullSortSaveLK:
                 story_dict['totaltime'] = ""
 
             # Give floated stories or blank totaltime's a readable MM:SS format in the TIMES list, or append true time
+            # if story_dict['floated'] or story_dict['totaltime'] == "":
             if story_dict['totaltime'] == "":
                 self.times_list.append("00:00")
             else:
@@ -368,6 +362,7 @@ class InewsPullSortSaveLK:
         for index, story_dict in enumerate(self.data):
 
             # Assign updated backtimes to each story
+            # if story_dict['floated'] is False and story_dict['backtime'] == "":
             if story_dict['backtime'] == "":
                 story_dict['backtime'] = self.backtimes_calculated[self.data.index(story_dict)]
 
@@ -375,11 +370,10 @@ class InewsPullSortSaveLK:
             if "@" in story_dict["backtime"]:
                 story_dict["backtime"] = str(datetime.timedelta(seconds=int(story_dict["backtime"].strip('@'))))
 
-
-
             try:
                 # Alongside the HH:MM:SS backtime there is a seconds from midnight key/value
                 if story_dict["backtime"]:
+
 
                     story_dict["seconds"] = sum(x * int(t) for x, t in
                                                 zip([3600, 60, 1], story_dict["backtime"].split(":")))
@@ -392,7 +386,6 @@ class InewsPullSortSaveLK:
 
             story_dict['focus'] = False
 
-
         # Rundown can be divided into Item sections. E.g. 1., 2., 3... This is used to skip through the list in
         # scrollview setting up swipe between items when in page view
         # Equation of a straight line (y=mx+b). See more here: https://www.mathsisfun.com/equation_of_line.html
@@ -404,9 +397,7 @@ class InewsPullSortSaveLK:
         # slope
         m = 0.001 / 0.05
         for index, story_dict in enumerate(reversed(self.data)):
-
-            if story_dict['page'] and story_dict['page'][-2:] == '00':
-
+            if story_dict['page'] and story_dict['page'][-1] == '.':
                 pos = (index / len(self.data))
 
                 if 0.5 <= pos < 0.98:
@@ -455,7 +446,6 @@ class InewsPullSortSaveLK:
                 if story_dict['page'][-2:] == '00':
                     slices.append(index)
 
-
         newer_dicts = []
         # Using the current and next index from slice, attempt to store chunks
         # of self.data in new_dicts
@@ -465,16 +455,12 @@ class InewsPullSortSaveLK:
         if not newer_dicts[-1]:
             newer_dicts.pop()
 
-
-
         with open('exports/pv/' + filename + '.json', 'w') as outfile:
             outfile.write(json.dumps(newer_dicts, indent=4))
 
-
-
-#inews = InewsDataPull()
+# inews = InewsDataPull()
 # inews.init_process("*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/wed/", "test_rundown")
-#inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
+# inews.init_process("*GMB-LK.*GMB.TX.0600", "stories/tm/mon/", "exports/gmb_0600")
 
 # generate_json("CTS.TX.0600", "0600")
 # generate_json("CTS.TX.0630", "0630")
