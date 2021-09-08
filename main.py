@@ -14,9 +14,10 @@ from s3_connection import upload_to_aws
 from func_timeout import func_timeout, FunctionTimedOut
 from datetime import datetime
 from calendar import timegm
-import time
+import re
 import json
 from kivy import properties as kp
+from kivy.uix.textinput import TextInput
 
 class ConsoleApp(MDApp):
     ready = False
@@ -87,53 +88,24 @@ class ConsoleApp(MDApp):
         start_m = 0
         fin_h = 0
         fin_m = 0
-        freq = 0
 
-        if self.automation_switches[production]:
-
+        if self.automation_switches[production]:  # If automate switch for the selected production is on:
             for x, y in self.schedule[production].items():  # Loop dict for each key(x), val(y)
                 if 'start' in x:
                     start_h, start_m = (int(x) for x in y.split(':'))   # Store start hour and min
                 elif 'fin' in x:
                     fin_h, fin_m = (int(x) for x in y.split(':'))   # Store finish hour and min
                 else:
-                    freq = int(y)  # Lastly store it's freq, then before moving onto the next start item check if it's falls
-                    # within the current time frame:
-
+                    freq = int(y)  # Lastly store it's freq, then before moving onto the next start item check if
+                    # the current actual time falls between the saved start and finish times:
                     if ((start_h * 3600) + (start_m * 60)) < seconds_midnight < ((fin_h * 3600) + (fin_m * 60)):
-                        return freq
+                        return freq  # If it does then return the set frequency for that time period and break out loop
 
-
-
-
-                    # start_h, start_m = d.split(':')
-
-
-                # elif 'finish' in d:
-                #     fin_h, fin_m = d.split(':')
-                # elif 'freq' in d:
-                #     freq = d
-
-            # if ((int(start_h) * 3600) + (int(start_m) * 60)) < seconds_midnight\
-            #         < ((int(fin_h) * 3600) + (int(fin_m) * 60)):
-
-
-            #         strt_h, strt_m = d['start'].split(':')
-            #         fin_h, fin_m = d['finish'].split(':')
-            #
-            #         if ((int(strt_h) * 3600) + (int(strt_m) * 60)) < seconds_midnight\
-            #                 < ((int(fin_h) * 3600) + (int(fin_m) * 60)):
-            #             return int(d['freq'])
-            #         else:
-            #             print('ZZ')
-            #     else:
-            #         print('XX')
-            #         return 3600
-            #
-            return 3650
+            return 3650  # If current actual time fail to fall within any schedules then set default freq to 1 hour
 
         else:
-            return int(eval('self.root.ids.repeat_in_seconds_' + production).text)
+            # If automate switch is off, use the value from left-hand-side frequency box
+            return int(self.root.ids['repeat_in_seconds_' + production].text)
 
 
     def send_to_aws(self, rundown, local_dir, export_path, color):
@@ -167,6 +139,25 @@ class ConsoleApp(MDApp):
             message += i + '\n'
 
         self.console.text = message
+
+
+
+class AutoTI(TextInput):
+
+    pat = re.compile('[^0-9]')
+
+    def insert_text(self, substring, from_undo=False):
+        pat = self.pat
+
+        if not from_undo and len(self.text) > 4:
+            s = substring
+            return s
+        elif len(self.text) == 1:
+            s = re.sub(pat, '', substring) + ':'
+        else:
+            s = re.sub(pat, '', substring)
+
+        return super(AutoTI, self).insert_text(s, from_undo=from_undo)
 
 
 if __name__ == '__main__':

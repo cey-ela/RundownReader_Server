@@ -49,11 +49,11 @@
         "finish_two": "12:30",
         "freq_two": "60",
         "start_three": "12:30",
-        "finish_three": "13:25",
+        "finish_three": "13:07",
         "freq_three": "30",
-        "start_four": "21:00",
-        "finish_four": "22:00",
-        "freq_four": "3000"
+        "start_four": "13:07",
+        "finish_four": "14:45",
+        "freq_four": "51"
     },
     "cs": {
         "start_one": "07:00",

@@ -1,8 +1,15 @@
-<AutoTI@TextInput>
+<AutoTI>
     multiline: False
     font_size: 12.8
     halign: 'center'
     write_tab: False
+
+<AutoTIFreq@TextInput>
+    multiline: False
+    font_size: 12.8
+    halign: 'center'
+    write_tab: False
+
 
 
 <Automate@MDBoxLayout>
@@ -39,7 +46,7 @@
         Label
             text: 'freq'
 
-        AutoTI
+        AutoTIFreq
             id: freq_one
             text: '300'
 #            on_text: app.automation[root.tag][0]['freq'] = self.text
@@ -64,7 +71,7 @@
 #            on_text: app.automation[root.tag][1]['finish'] = self.text
         Label
             text: 'freq'
-        AutoTI
+        AutoTIFreq
             id: freq_two
             text: '300'
 #            on_text: app.automation[root.tag][1]['freq'] = self.text
@@ -74,7 +81,7 @@
     Spacer2
     MDBoxLayout
         Label:
-            text: '1:'
+            text: '3:'
         AutoTI
             id: start_three
             text: 'start'
@@ -88,7 +95,7 @@
 #            on_text: app.automation[root.tag][2]['finish'] = self.text
         Label
             text: 'freq'
-        AutoTI
+        AutoTIFreq
             id: freq_three
             text: '300'
 #            on_text: app.automation[root.tag][2]['freq'] = self.text
@@ -98,7 +105,7 @@
     Spacer2
     MDBoxLayout
         Label:
-            text: '1:'
+            text: '4:'
         AutoTI
             id: start_four
             text: 'start'
@@ -112,7 +119,7 @@
 #            on_text: app.automation[root.tag][3]['finish'] = self.text
         Label
             text: 'freq'
-        AutoTI
+        AutoTIFreq
             id: freq_four
             text: '300'
 #            on_text: app.automation[root.tag][3]['freq'] = self.text
@@ -229,23 +236,7 @@ MDBoxLayout:
 
                 MDBoxLayout
 
-                    MDBoxLayout:
-                        orientation: 'vertical'
-                        Widget
-                        MDBoxLayout
-                            size_hint_x: None
-                            width: 120
-                            Label
-                                text: 'Frequency:'
-                                font_size: 12
-                            TextInput
-                                id: repeat_in_seconds_gb
-                                size_hint: None, None
-                                width: 45
-                                height: 30
-                                text: '30'
-                                background_color: .75, .75, .75
-                        Widget
+                    Widget
 
                     WhitLbl
                         text: '  GMB'
@@ -307,7 +298,28 @@ MDBoxLayout:
 
                 Widget
                     size_hint_y: None
-                    height: 20
+                    height: 8
+
+                MDBoxLayout:
+                    size_hint_y: .3
+                    size_hint_x: None
+                    width: 80
+                    Label
+                        text: 'freq:'
+#                        font_size: 14
+
+                    TextInput
+                        id: repeat_in_seconds_gb
+                        size_hint: None, None
+                        width: 45
+                        height: 30
+                        text: '30'
+                        background_color: .75, .75, .75
+
+
+                Widget
+                    size_hint_y: None
+                    height: 8
 
             Spacer
 
@@ -316,24 +328,7 @@ MDBoxLayout:
                 orientation: 'vertical'
                 MDBoxLayout
 
-                    MDBoxLayout:
-                        orientation: 'vertical'
-
-                        Widget
-                        MDBoxLayout
-                            size_hint_x: None
-                            width: 120
-                            Label
-                                text: 'Frequency:'
-                                font_size: 12
-                            TextInput
-                                id: repeat_in_seconds_lk
-                                size_hint: None, None
-                                width: 45
-                                height: 30
-                                text: '30'
-                                background_color: .75, .75, .75
-                        Widget
+                    Widget
 
                     WhitLbl
                         text: '  LK'
@@ -360,9 +355,28 @@ MDBoxLayout:
 
                 Widget
                     size_hint_y: None
-                    height: 20
+                    height: 8
+
+                MDBoxLayout:
+                    size_hint_y: .3
+                    size_hint_x: None
+                    width: 80
+                    Label
+                        text: 'freq:'
+#                        font_size: 14
+
+                    TextInput
+                        id: repeat_in_seconds_lk
+                        size_hint: None, None
+                        width: 45
+                        height: 30
+                        text: '30'
+                        background_color: .75, .75, .75
 
 
+                Widget
+                    size_hint_y: None
+                    height: 8
 
             Spacer
 
@@ -372,28 +386,7 @@ MDBoxLayout:
 
                 MDBoxLayout
 
-                    MDBoxLayout:
-                        orientation: 'vertical'
-                        Widget
-                        MDBoxLayout
-                            size_hint_x: None
-                            width: 200
-                        Widget
-                        MDBoxLayout
-                            size_hint_x: None
-                            width: 120
-                            Label
-                                text: 'Frequency:'
-                                font_size: 12
-                            TextInput
-                                id: repeat_in_seconds_tm
-                                size_hint: None, None
-                                width: 45
-                                height: 30
-                                text: '30'
-                                background_color: .75, .75, .75
-                        Widget
-
+                    Widget
                     WhitLbl
                         text: '  TM'
                         halign: 'center'
@@ -448,7 +441,28 @@ MDBoxLayout:
 
                 Widget
                     size_hint_y: None
-                    height: 20
+                    height: 8
+
+                MDBoxLayout:
+                    size_hint_y: .3
+                    size_hint_x: None
+                    width: 80
+                    Label
+                        text: 'freq:'
+#                        font_size: 14
+
+                    TextInput
+                        id: repeat_in_seconds_tm
+                        size_hint: None, None
+                        width: 45
+                        height: 30
+                        text: '30'
+                        background_color: .75, .75, .75
+
+
+                Widget
+                    size_hint_y: None
+                    height: 8
             Spacer
 
             # GMB Box
@@ -456,25 +470,7 @@ MDBoxLayout:
                 orientation: 'vertical'
 
                 MDBoxLayout
-
-                    MDBoxLayout:
-                        orientation: 'vertical'
-                        Widget
-                        MDBoxLayout
-                            size_hint_x: None
-                            width: 120
-                            Label
-                                text: 'Frequency:'
-                                font_size: 12
-                            TextInput
-                                id: repeat_in_seconds_lw
-                                size_hint: None, None
-                                width: 45
-                                height: 30
-                                text: '30'
-                                background_color: .75, .75, .75
-                        Widget
-
+                    Widget
                     WhitLbl
                         text: '  LW'
                         halign: 'center'
@@ -533,7 +529,28 @@ MDBoxLayout:
 
                 Widget
                     size_hint_y: None
-                    height: 20
+                    height: 8
+
+                MDBoxLayout:
+                    size_hint_y: .3
+                    size_hint_x: None
+                    width: 80
+                    Label
+                        text: 'freq:'
+#                        font_size: 14
+
+                    TextInput
+                        id: repeat_in_seconds_lw
+                        size_hint: None, None
+                        width: 45
+                        height: 30
+                        text: '30'
+                        background_color: .75, .75, .75
+
+
+                Widget
+                    size_hint_y: None
+                    height: 8
 
             Spacer
 
@@ -542,24 +559,7 @@ MDBoxLayout:
                 orientation: 'vertical'
 
                 MDBoxLayout
-
-                    MDBoxLayout:
-                        orientation: 'vertical'
-                        Widget
-                        MDBoxLayout
-                            size_hint_x: None
-                            width: 120
-                            Label
-                                text: 'Frequency:'
-                                font_size: 12
-                            TextInput
-                                id: repeat_in_seconds_cs
-                                size_hint: None, None
-                                width: 45
-                                height: 30
-                                text: '30'
-                                background_color: .75, .75, .75
-                        Widget
+                    Widget
 
                     WhitLbl
                         text: 'CUSTOM'
@@ -613,10 +613,30 @@ MDBoxLayout:
                             on_active: console_tm.text = ''
                             on_active: console_lw.text = ''
 
+                Widget
+                    size_hint_y: None
+                    height: 8
+
+                MDBoxLayout:
+                    size_hint_y: .3
+                    size_hint_x: None
+                    width: 80
+                    Label
+                        text: 'freq:'
+#                        font_size: 14
+
+                    TextInput
+                        id: repeat_in_seconds_cs
+                        size_hint: None, None
+                        width: 45
+                        height: 30
+                        text: '30'
+                        background_color: .75, .75, .75
+
 
                 Widget
                     size_hint_y: None
-                    height: 20
+                    height: 8
 
             Spacer
 
