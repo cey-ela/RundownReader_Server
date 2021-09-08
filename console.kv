@@ -2,6 +2,7 @@
     multiline: False
     font_size: 12.8
     halign: 'center'
+    write_tab: False
 
 
 <Automate@MDBoxLayout>
@@ -20,9 +21,6 @@
         MDSwitch
             on_active: app.automation_switches[root.tag] = self.active
         Widget
-        Button
-            text: 'UPDATE'
-            on_release: print('resting')
 
     MDBoxLayout
         Label:
@@ -181,14 +179,31 @@ MDBoxLayout:
                 Line:
                     width: 4
                     rectangle: self.x, self.y, self.width, self.height
-        Label:
-            text: 'AUTOMATE'
+        BoxLayout
             canvas.before:
                 Color:
                     rgb: .85,.85,.85
                 Line:
                     width: 4
                     rectangle: self.x, self.y, self.width, self.height
+            Widget
+            Label:
+                text: 'AUTOMATE'
+
+            BoxLayout
+                orientation: 'vertical'
+                Widget
+                BoxLayout
+                    Widget
+                    Button
+                        text: 'UPDATE'
+                        font_size: 10
+                        on_release: app.update_schedule()
+                        size_hint_x: 2
+                        valign: 'center'
+                    Widget
+                Widget
+
         Label:
             text: 'LOG'
             canvas.before:

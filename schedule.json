@@ -1,112 +1,72 @@
 {
-  "gb": [
-    {
-      "start": "07:00",
-      "finish": "08:45",
-      "freq": "300"
+    "gb": {
+        "start_one": "07:21",
+        "finish_one": "08:40",
+        "freq_one": "300",
+        "start_two": "08:40",
+        "finish_two": "09:50",
+        "freq_two": "30",
+        "start_three": "10:00",
+        "finish_three": "11:00",
+        "freq_three": "300",
+        "start_four": "11:00",
+        "finish_four": "12:00",
+        "freq_four": "3000"
     },
-    {
-      "start": "08:45",
-      "finish": "09:55",
-      "freq": "30"
+    "lk": {
+        "start_one": "07:00",
+        "finish_one": "08:45",
+        "freq_one": "300",
+        "start_two": "08:45",
+        "finish_two": "09:55",
+        "freq_two": "30",
+        "start_three": "10:00",
+        "finish_three": "11:00",
+        "freq_three": "3000",
+        "start_four": "11:00",
+        "finish_four": "12:00",
+        "freq_four": "3000"
     },
-    {
-      "start": "10:00",
-      "finish": "11:00",
-      "freq": "3000"
+    "tm": {
+        "start_one": "07:00",
+        "finish_one": "08:45",
+        "freq_one": "300",
+        "start_two": "08:45",
+        "finish_two": "09:55",
+        "freq_two": "30",
+        "start_three": "10:00",
+        "finish_three": "11:00",
+        "freq_three": "3000",
+        "start_four": "11:00",
+        "finish_four": "12:00",
+        "freq_four": "3000"
     },
-    {
-      "start": "11:00",
-      "finish": "12:00",
-      "freq": "3000"
+    "lw": {
+        "start_one": "06:00",
+        "finish_one": "11:30",
+        "freq_one": "300",
+        "start_two": "11:30",
+        "finish_two": "12:30",
+        "freq_two": "60",
+        "start_three": "12:30",
+        "finish_three": "13:25",
+        "freq_three": "30",
+        "start_four": "21:00",
+        "finish_four": "22:00",
+        "freq_four": "3000"
+    },
+    "cs": {
+        "start_one": "07:00",
+        "finish_one": "08:45",
+        "freq_one": "300",
+        "start_two": "08:45",
+        "finish_two": "09:55",
+        "freq_two": "30",
+        "start_three": "10:00",
+        "finish_three": "11:00",
+        "freq_three": "3000",
+        "start_four": "11:00",
+        "finish_four": "12:00",
+        "freq_four": "3000"
     }
-  ],
-  "lk": [
-    {
-      "start": "07:00",
-      "finish": "08:45",
-      "freq": "300"
-    },
-    {
-      "start": "08:45",
-      "finish": "09:55",
-      "freq": "30"
-    },
-    {
-      "start": "10:00",
-      "finish": "11:00",
-      "freq": "3000"
-    },
-    {
-      "start": "11:00",
-      "finish": "12:00",
-      "freq": "3000"
-    }
-  ],
-  "tm": [
-    {
-      "start": "06:00",
-      "finish": "08:00",
-      "freq": "300"
-    },
-    {
-      "start": "08:00",
-      "finish": "09:30",
-      "freq": "60"
-    },
-    {
-      "start": "09:30",
-      "finish": "12:30",
-      "freq": "30"
-    },
-    {
-      "start": "12:30",
-      "finish": "15:00",
-      "freq": "180"
-    }
-  ],
-  "lw": [
-    {
-      "start": "07:00",
-      "finish": "12:15",
-      "freq": "300"
-    },
-    {
-      "start": "12:15",
-      "finish": "13:25",
-      "freq": "30"
-    },
-    {
-      "start": "20:00",
-      "finish": "21:00",
-      "freq": "3000"
-    },
-    {
-      "start": "21:00",
-      "finish": "22:00",
-      "freq": "3000"
-    }
-  ],
-  "cs": [
-    {
-      "start": "07:00",
-      "finish": "08:45",
-      "freq": "300"
-    },
-    {
-      "start": "08:45",
-      "finish": "09:55",
-      "freq": "30"
-    },
-    {
-      "start": "21:00",
-      "finish": "22:00",
-      "freq": "3000"
-    },
-    {
-      "start": "22:00",
-      "finish": "23:00",
-      "freq": "3000"
-    }
-  ]
 }
