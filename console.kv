@@ -1,5 +1,7 @@
 <AutoTI@TextInput>
     multiline: False
+    font_size: 12.8
+    halign: 'center'
 
 
 <Automate@MDBoxLayout>
@@ -16,9 +18,11 @@
     MDBoxLayout
         Widget
         MDSwitch
-            id: auto_switch
             on_active: app.automation_switches[root.tag] = self.active
         Widget
+        Button
+            text: 'UPDATE'
+            on_release: print('resting')
 
     MDBoxLayout
         Label:
@@ -26,21 +30,21 @@
         AutoTI
             id: start_one
             text: 'start'
-            on_text: app.automation[root.tag][0]['start'] = self.text
+#            on_text: app.automation[root.tag][0]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_one
             text: 'finish'
-            on_text: app.automation[root.tag][0]['finish'] = self.text
+#            on_text: app.automation[root.tag][0]['finish'] = self.text
         Label
             text: 'freq'
 
         AutoTI
             id: freq_one
             text: '300'
-            on_text: app.automation[root.tag][0]['freq'] = self.text
+#            on_text: app.automation[root.tag][0]['freq'] = self.text
 
         Widget
             size_hint_x: .1
@@ -52,20 +56,20 @@
         AutoTI
             id: start_two
             text: 'start'
-            on_text: app.automation[root.tag][1]['start'] = self.text
+#            on_text: app.automation[root.tag][1]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_two
             text: 'finish'
-            on_text: app.automation[root.tag][1]['finish'] = self.text
+#            on_text: app.automation[root.tag][1]['finish'] = self.text
         Label
             text: 'freq'
         AutoTI
             id: freq_two
             text: '300'
-            on_text: app.automation[root.tag][1]['freq'] = self.text
+#            on_text: app.automation[root.tag][1]['freq'] = self.text
         Widget
             size_hint_x: .1
 
@@ -76,20 +80,20 @@
         AutoTI
             id: start_three
             text: 'start'
-            on_text: app.automation[root.tag][2]['start'] = self.text
+#            on_text: app.automation[root.tag][2]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_three
             text: 'finish'
-            on_text: app.automation[root.tag][2]['finish'] = self.text
+#            on_text: app.automation[root.tag][2]['finish'] = self.text
         Label
             text: 'freq'
         AutoTI
             id: freq_three
             text: '300'
-            on_text: app.automation[root.tag][2]['freq'] = self.text
+#            on_text: app.automation[root.tag][2]['freq'] = self.text
         Widget
             size_hint_x: .1
 
@@ -100,21 +104,21 @@
         AutoTI
             id: start_four
             text: 'start'
-            on_text: app.automation[root.tag][3]['start'] = self.text
+#            on_text: app.automation[root.tag][3]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_four
             text: 'finish'
-            on_text: app.automation[root.tag][3]['finish'] = self.text
+#            on_text: app.automation[root.tag][3]['finish'] = self.text
         Label
             text: 'freq'
         AutoTI
             id: freq_four
             text: '300'
-            on_text: app.automation[root.tag][3]['freq'] = self.text
-            on_text: print(app.automation)
+#            on_text: app.automation[root.tag][3]['freq'] = self.text
+#            on_text: print(app.automation)
         Widget
             size_hint_x: .1
 
