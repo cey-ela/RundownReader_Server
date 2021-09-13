@@ -9,17 +9,9 @@ import time
 
 class InewsPullSortSaveLK:
     app = None
-    console = None
     epoch_time = int(time.time())
-    timeout_counter = 0
-
-    def __init__(self):
-        self.story_ids = []  # list of story_id titles in string form. E.g. 'E45RF34'
-        self.data = []  # Once converted from XML each story dict gets stored in here
-        self.times_list = []  # total time/duration for each story in valid MM:SS, 00:00 if blank
-        self.hard_backtimes = []  # hard-out backtimes from iNews in seconds format. E.g. @34256
-        self.backtime_pos_list = []  # An indexed list for the above hard-out backtimes, blank positions if no backtime present
-        self.backtimes_calculated = []  # Final backtime list. Appended in reverse by subtracting time_list elements from hard_backtimes lst
+    data = []
+    story_ids = []
 
     def pull_xml_via_ftp(self, inews_path, local_dir):
         counter = 0
@@ -100,7 +92,7 @@ class InewsPullSortSaveLK:
         </fields>
         We only want some meta data from line 3, story_id form line 7 and then everything between /fields.
         """
-        tp = 0
+
 
         # Cycle through and open each newly created story file
         for story_id_title in self.story_ids:
@@ -188,32 +180,59 @@ class InewsPullSortSaveLK:
                 # 8) Deletes the file we just read as it's no longer needed
                 os.remove(local_dir + story_id_title)
 
-    def set_backtime(self):
-        current_time = 0
-        next_time = 0
+    def set_backtimes(self):
+        """
+        Looping the the list of dicts, self.data, this process looks out for timing related key/values and gives each
+        dict a new key, ['backtime'] with a calculated value of when the story goes on air. The observed key/values are:
+        'back-time uec' = Infrequent hard-out, unchangeable timings for the show. e.g. start/end of show, opt
+        'air-date' = If the show deviates from pre-set times, the PA manually sets this time. This takes precedent.
+        'total-time uec' = The total-time/duration of the story
+
+        note:~ iNews appends ' uec' to back-time and total-time keys IF they have values.
+
+        Each loop looks for 'air-date' first, 'back-time' second, 'total-time' last.
+
+        If air-date or back-time is found assign its value to the new key ['backtime'] and to the variable current_time
+        If they also have 'total-time' then the variable next_time = current_time + total-time
+        After this break out of the current loop iteration and begin the next
+
+        If no air-date or back-time exists but a total-time does, then proceed to give dict['backtime'] the previously
+        forecast next_time value.
+
+        note:~ We have to work with current_time amd next_time vars in this way because just working with say
+        ['backtime'] and total-time on the same story/dict would always result in calculating a backtime in the future
+
+        Lastly, if no timing related value are found in the dict, dict['backtime'] = the previously set current_time
+        """
+
+        current_time = 0  # Used to add a value to the dict['backtime'] IF its duration/total-time == 00:00
+        next_time = 0  # IF a duration/total-time IS detected, that value is added to current_time to forecast when the
+        # current item will end and the next one begins
+
         for d in self.data:
             try:
-                # converted a lot due to slice
+                # 'air-date' comes in as epoch. converted to str(HH:MM:SS) sliced in to hrs, min, secs and converted
+                # back to int to calculate seconds from midnight...
                 air_hour = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[11:13])
                 air_min = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[14:16])
                 air_secs = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[17:19])
+
                 current_time = d['backtime'] = (air_hour * 3600) + (air_min * 60) + air_secs
                 next_time = current_time + int(d['total-time uec'])
-                print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['backtime'])))
                 continue
-            except (KeyError, ValueError):
+
+            except (KeyError, ValueError):  # Key: 'total-time uec' not in every dict, Val: air-date
                 pass
 
             try:
                 current_time = d['backtime'] = int(d['back-time uec'][1:])
+
                 if 'total-time uec' in d:
                     next_time = current_time + int(d['total-time uec'])
-
-                print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['backtime'])))
                 continue
-            except KeyError as e:
-                pass
 
+            except KeyError:  # try only works if 'back-time uec' present
+                pass
 
             if 'total-time uec' in d:
                 d['backtime'] = next_time
@@ -221,55 +240,15 @@ class InewsPullSortSaveLK:
             else:
                 d['backtime'] = current_time
 
-
-            print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['backtime'])))
-
-
-
-
-
-
-            # if d['air-date'] == "":
-            #     try:
-            #         d['backtime'] = tp = d['back-time uec'][1:]
-            #         print('bt added: ' + str(tp))
-            #     except KeyError:
-            #         pass
-            #
-            #
-            #     elif d['total-time uec']:
-            #         print('attempting total...')
-            #         d['backtime'] = tp = tp + d['total-time uec']
-            #         print('total updated: ' + str(tp))
-
-
-
-
-
-
-                # print(d['backtime'])
-
-                # print('total')
-                # print(d['total-time uec'])
-                # print('ad')
-                # print(d['air-date'])
-                # print('uec')
-                # print(d['back-time uec'])
-
-
+            # print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['backtime'])))
 
 
 inews = InewsPullSortSaveLK()
-inews.pull_xml_via_ftp("*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/fri/")
-inews.convert_xml_to_dict("stories/tm/fri/")
-inews.set_backtime()
 
-# if story_dict['airdate'] != "":
-#     air_hour = int(str(datetime.datetime.fromtimestamp(int(story_dict['airdate'])))[11:13])
-#     air_min = int(str(datetime.datetime.fromtimestamp(int(story_dict['airdate'])))[14:16])
-#     air_secs = int(str(datetime.datetime.fromtimestamp(int(story_dict['airdate'])))[17:19])
-#     secs_from_m = '@' + str((air_hour * 3600) + (air_min * 60) + air_secs)
-#
-#     self.hard_backtimes.append(secs_from_m)
-#     self.backtime_pos_list.append(secs_from_m)
-#     # continue
+# inews.pull_xml_via_ftp("*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/fri/")
+# inews.convert_xml_to_dict("stories/tm/fri/")
+
+inews.pull_xml_via_ftp("*LW.RUNORDERS.MONDAY", "stories/lw/mon/")
+inews.convert_xml_to_dict("stories/lw/mon/")
+
+inews.set_backtimes()
