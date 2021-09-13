@@ -93,10 +93,9 @@ class InewsPullSortSaveLK:
         We only want some meta data from line 3, story_id form line 7 and then everything between /fields.
         """
 
-
         # Cycle through and open each newly created story file
         for story_id_title in self.story_ids:
-            break_out_flag = False
+            break_out_flag = False  # If story is floated, set this to true to prevent dict from being added to list
             with open(local_dir + story_id_title, "rb") as story_file:
 
                 # File will now have relevant contents stripped, sanitised and placed into this dict:
@@ -163,9 +162,16 @@ class InewsPullSortSaveLK:
                         if 'gt;' in value:
                             value = value.replace('gt;', '')
 
+                        if 'page' in key:  # change key from 'page-number' to 'page'
+                            key = key[:4]
+
+                        if 'total' in key:  # change key from 'total-time' to 'time'
+                            key = key[:5] + key[6:]
+
+                        story_dict['focus'] = False
+
                         # Else write key and value as they are
                         story_dict[key] = value
-                            # print(key)
 
 
                 if not break_out_flag:
@@ -183,7 +189,7 @@ class InewsPullSortSaveLK:
     def set_backtimes(self):
         """
         Looping the the list of dicts, self.data, this process looks out for timing related key/values and gives each
-        dict a new key, ['backtime'] with a calculated value of when the story goes on air. The observed key/values are:
+        dict a new key, ['seconds'] with a calculated value of when the story goes on air. The observed key/values are:
         'back-time uec' = Infrequent hard-out, unchangeable timings for the show. e.g. start/end of show, opt
         'air-date' = If the show deviates from pre-set times, the PA manually sets this time. This takes precedent.
         'total-time uec' = The total-time/duration of the story
@@ -192,20 +198,20 @@ class InewsPullSortSaveLK:
 
         Each loop looks for 'air-date' first, 'back-time' second, 'total-time' last.
 
-        If air-date or back-time is found assign its value to the new key ['backtime'] and to the variable current_time
+        If air-date or back-time is found assign its value to the new key ['seconds'] and to the variable current_time
         If they also have 'total-time' then the variable next_time = current_time + total-time
         After this break out of the current loop iteration and begin the next
 
-        If no air-date or back-time exists but a total-time does, then proceed to give dict['backtime'] the previously
+        If no air-date or back-time exists but a total-time does, then proceed to give dict['seconds'] the previously
         forecast next_time value.
 
         note:~ We have to work with current_time amd next_time vars in this way because just working with say
-        ['backtime'] and total-time on the same story/dict would always result in calculating a backtime in the future
+        ['seconds'] and total-time on the same story/dict would always result in calculating a seconds in the future
 
-        Lastly, if no timing related value are found in the dict, dict['backtime'] = the previously set current_time
+        Lastly, if no timing related value are found in the dict, dict['seconds'] = the previously set current_time
         """
 
-        current_time = 0  # Used to add a value to the dict['backtime'] IF its duration/total-time == 00:00
+        current_time = 0  # Used to add a value to the dict['seconds'] IF its duration/total-time == 00:00
         next_time = 0  # IF a duration/total-time IS detected, that value is added to current_time to forecast when the
         # current item will end and the next one begins
 
@@ -217,38 +223,80 @@ class InewsPullSortSaveLK:
                 air_min = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[14:16])
                 air_secs = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[17:19])
 
-                current_time = d['backtime'] = (air_hour * 3600) + (air_min * 60) + air_secs
+                current_time = d['seconds'] = (air_hour * 3600) + (air_min * 60) + air_secs
                 next_time = current_time + int(d['total-time uec'])
                 continue
-
             except (KeyError, ValueError):  # Key: 'total-time uec' not in every dict, Val: air-date
                 pass
 
             try:
-                current_time = d['backtime'] = int(d['back-time uec'][1:])
+                current_time = d['seconds'] = int(d['back-time uec'][1:])
 
                 if 'total-time uec' in d:
                     next_time = current_time + int(d['total-time uec'])
                 continue
-
             except KeyError:  # try only works if 'back-time uec' present
                 pass
 
             if 'total-time uec' in d:
-                d['backtime'] = next_time
+                d['seconds'] = next_time
                 next_time += int(d['total-time uec'])
             else:
-                d['backtime'] = current_time
+                d['seconds'] = current_time
 
-            # print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['backtime'])))
+            d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))
+
+            d.pop('back-time')  # rem
+
+            # print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['seconds'])))
+
+    def finishing_touches(self):
+        # Rundown can be divided into Item sections. E.g. 1., 2., 3... This is used to skip through the list in
+        # scrollview setting up swipe between items when in page view
+        # Equation of a straight line (y=mx+b). See more here: https://www.mathsisfun.com/equation_of_line.html
+
+        # intercepts
+        b_pos = -0.0095
+        b_neg = -0.0105
+
+        # slope
+        m = 0.001 / 0.05
+        for index, story_dict in enumerate(reversed(self.data)):
+
+            if story_dict['page'][-2:] == '00' or story_dict['page'][-1:] == '.':
+
+                pos = (index / len(self.data))
+
+                if 0.5 <= pos < 0.98:
+                    offset = round(round(m * pos + b_pos, 10), 3)
+                    pos += abs(offset)
+                elif 0.02 <= pos < 0.5:
+                    offset = round(round(m * pos + b_neg, 10), 3)
+                    pos -= abs(offset)
+
+                story_dict['pos'] = round(pos, 3)
+            else:
+                story_dict['pos'] = None
+
+    def convert_to_json(self, filename):
+        """...Export..."""
+
+        with open('exports/sv/' + filename + '.json', 'w') as outfile:
+            outfile.write(json.dumps(self.data, indent=4, sort_keys=True))
 
 
 inews = InewsPullSortSaveLK()
 
-# inews.pull_xml_via_ftp("*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/fri/")
-# inews.convert_xml_to_dict("stories/tm/fri/")
+# inews.pull_xml_via_ftp("*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/mon/")
+# inews.convert_xml_to_dict("stories/tm/mon/")
+# inews.set_backtimes()
+# inews.finishing_touches()
+# inews.convert_to_json("tm/mon")
 
 inews.pull_xml_via_ftp("*LW.RUNORDERS.MONDAY", "stories/lw/mon/")
 inews.convert_xml_to_dict("stories/lw/mon/")
-
 inews.set_backtimes()
+inews.finishing_touches()
+inews.convert_to_json("lw/lw_mon")
+
+
