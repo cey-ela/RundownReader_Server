@@ -1,37 +1,77 @@
 # Property Of The British Broadcasting Corporation 2020 - Oliver Mardle.
-from ftplib import FTP
 import re
 import datetime
 import json
 import os
 import time
+from ftplib import FTP
+from func_timeout import func_timeout, FunctionTimedOut
 
 
-class InewsPullSortSaveLK:
+class InewsPullSortSave:
     app = None
     epoch_time = int(time.time())
     data = []
     story_ids = []
 
-    def pull_xml_via_ftp(self, inews_path, local_dir):
-        counter = 0
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
-        #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-            inews_details = json.load(aws_creds)
-            user = inews_details[1]['user']
-            passwd = inews_details[1]['passwd']
-            ip = inews_details[1]['ip']
+    def init_process(self, inews_path, local_dir, export_path, color):
+        # 1ST
+        self.app.console_log(export_path, color + 'Connecting...[/color]')
+        try:
+            func_timeout(30, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
 
-        # Open FTP connection
-        ftp = FTP(ip)
-        ftp.login(user=user, passwd=passwd)
+        except FunctionTimedOut:
+            self.app.console_log(export_path, color + '...RETR cmd hung, retrying...[/color]')
+            print('RETR cmd hung, retrying')
+            return self.init_process(inews_path, local_dir, export_path, color)
+
+        except TimeoutError:
+            self.app.console_log(export_path, color + '...connection to iNews timeout, check connection...[/color]')
+            print('General IP connection failure')
+            return self.init_process(inews_path, local_dir, export_path, color)
+
+
+        self.convert_xml_to_dict(local_dir)
+        self.app.console_log(export_path, color + "Converting stories from NSML to local dict[/color]")
+
+
+        self.set_backtimes()
+
+
+        self.finishing_touches()
+        self.app.console_log(export_path, color + "Calculating backtimes[/color]")
+
+
+        self.create_pv_version()
+
+
+        self.create_json_files(export_path)
+        self.app.console_log(export_path, color + "Converting dict to json[/color]")
+
+
+
+    def pull_xml_via_ftp(self, inews_path, local_dir, export_path, color):
+        counter = 0
+        ftp_sesh = self.app.ftp_sessions[export_path[3:]]
+
+        # with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
+        # #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        #     inews_details = json.load(aws_creds)
+        #     user = inews_details[1]['user']
+        #     passwd = inews_details[1]['passwd']
+        #     ip = inews_details[1]['ip']
+
+        # # Open FTP connection
+        # ftp = FTP(ip)
+        # ftp.login(user=user, passwd=passwd)
 
         # Retrieve rundown using 'path' parameter passed when function is called
         # e.g. ftp.cwd("CTS.TX.0600")
-        ftp.cwd(inews_path)
+        # self.app.ftp.cwd(inews_path)
+        ftp_sesh.cwd(inews_path)
 
         # Store story ID as list of titles. E.g. '5AE4RT2'
-        self.story_ids = ftp.nlst()
+        self.story_ids = ftp_sesh.nlst()
 
         # Cycles through each line/Story ID and opens as a new file
         # RETRIEVE the contents of each Story ID from iNews and store it in new_story_file hen save to local_dir
@@ -40,17 +80,16 @@ class InewsPullSortSaveLK:
             self.epoch_time = int(time.time())
 
             with open(local_dir + story_id_title, "wb") as new_story_file:
-                ftp.retrbinary("RETR " + story_id_title, new_story_file.write)
+                ftp_sesh.retrbinary("RETR " + story_id_title, new_story_file.write)
 
             new_story_file.close()
             counter += 1
             self.epoch_time = int(time.time())
             if counter % 25 == 0:
-                print(str(counter))
-            #     self.app.console_log(filename, color + str(counter) + ' stories pulled[/color]')
+                self.app.console_log(export_path, color + str(counter) + ' stories pulled[/color]')
 
-        # Close FTP connection
-        ftp.quit()
+        # # Close FTP connection
+        # self.app.ftp.quit()
 
     def convert_xml_to_dict(self, local_dir):
         # TODO: NOTE - focus, brk, and floated default false values removed, try and work App without these
@@ -246,14 +285,18 @@ class InewsPullSortSaveLK:
 
             d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))
 
-            d.pop('back-time')  # rem
+            try:
+                d.pop('back-time')  # rem
+            except:
+                pass
 
             # print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['seconds'])))
 
     def finishing_touches(self):
-        # Rundown can be divided into Item sections. E.g. 1., 2., 3... This is used to skip through the list in
-        # scrollview setting up swipe between items when in page view
-        # Equation of a straight line (y=mx+b). See more here: https://www.mathsisfun.com/equation_of_line.html
+        # Rundowns are divided into sections, aka items, defined by the dict['page'] parameter. Scrollview utilises
+        # these breaks to skip through each 'item'. The position of each item is set here. Some manipulation of pos
+        # is needed to center pos in the middle of the screen - it drifts without this. We use 'Equation of a straight
+        # line' (y=mx+b), to do so. See more here: https://www.mathsisfun.com/equation_of_line.html
 
         # intercepts
         b_pos = -0.0095
@@ -278,14 +321,20 @@ class InewsPullSortSaveLK:
             else:
                 story_dict['pos'] = None
 
-    def convert_to_json(self, filename):
-        """...Export..."""
+    def create_pv_version(self):
+        pass
 
-        with open('exports/sv/' + filename + '.json', 'w') as outfile:
+    def create_json_files(self, export_path):
+        """...Export..."""
+        with open('exports/sv/' + export_path + '.json', 'w') as outfile:
             outfile.write(json.dumps(self.data, indent=4, sort_keys=True))
 
 
-inews = InewsPullSortSaveLK()
+        # Same for PV
+
+
+
+# inews = InewsPullSortSave()
 
 # inews.pull_xml_via_ftp("*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/mon/")
 # inews.convert_xml_to_dict("stories/tm/mon/")
@@ -293,10 +342,10 @@ inews = InewsPullSortSaveLK()
 # inews.finishing_touches()
 # inews.convert_to_json("tm/mon")
 
-inews.pull_xml_via_ftp("*LW.RUNORDERS.MONDAY", "stories/lw/mon/")
-inews.convert_xml_to_dict("stories/lw/mon/")
-inews.set_backtimes()
-inews.finishing_touches()
-inews.convert_to_json("lw/lw_mon")
+# inews.pull_xml_via_ftp("*LW.RUNORDERS.MONDAY", "stories/lw/mon/")
+# inews.convert_xml_to_dict("stories/lw/mon/")
+# inews.set_backtimes()
+# inews.finishing_touches()
+# inews.convert_to_json("lw/lw_mon")
 
 
