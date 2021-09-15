@@ -3,16 +3,24 @@ import re
 import datetime
 import json
 import os
+import glob
 import time
-from ftplib import FTP
+import ftplib as ftp
 from func_timeout import func_timeout, FunctionTimedOut
 
 
-class InewsPullSortSave:
+class InewsPullSortPush:
+    """
+    Pull it...sort it...push it...bop it!
+    """
     app = None
-    epoch_time = int(time.time())
-    data = []
-    story_ids = []
+    def __init__(self):
+        super().__init__()
+
+        self.epoch_time = int(time.time())
+        self.data = []
+        self.story_ids = []
+        self.data_pv = []
 
     def init_process(self, inews_path, local_dir, export_path, color):
         # 1ST
@@ -22,6 +30,7 @@ class InewsPullSortSave:
 
         except FunctionTimedOut:
             self.app.console_log(export_path, color + '...RETR cmd hung, retrying...[/color]')
+            # Rename log output, what errors actually cause what?, include timings
             print('RETR cmd hung, retrying')
             return self.init_process(inews_path, local_dir, export_path, color)
 
@@ -36,13 +45,14 @@ class InewsPullSortSave:
 
 
         self.set_backtimes()
-
-
-        self.finishing_touches()
         self.app.console_log(export_path, color + "Calculating backtimes[/color]")
 
 
-        self.create_pv_version()
+        self.finishing_touches()
+
+
+
+        self.create_pv_version(export_path)
 
 
         self.create_json_files(export_path)
@@ -51,45 +61,39 @@ class InewsPullSortSave:
 
 
     def pull_xml_via_ftp(self, inews_path, local_dir, export_path, color):
-        counter = 0
+        # Start by making sure the target working folder is completely empty. If process previously exited early there
+        # may be some remnants
+        for remnants in os.listdir(local_dir):
+            os.remove(local_dir + remnants)
+
+        counter = 0  # Used to display amount of files in the output console
+
         ftp_sesh = self.app.ftp_sessions[export_path[3:]]
 
-        # with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
-        # #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        #     inews_details = json.load(aws_creds)
-        #     user = inews_details[1]['user']
-        #     passwd = inews_details[1]['passwd']
-        #     ip = inews_details[1]['ip']
-
-        # # Open FTP connection
-        # ftp = FTP(ip)
-        # ftp.login(user=user, passwd=passwd)
-
-        # Retrieve rundown using 'path' parameter passed when function is called
-        # e.g. ftp.cwd("CTS.TX.0600")
-        # self.app.ftp.cwd(inews_path)
         ftp_sesh.cwd(inews_path)
+
+
 
         # Store story ID as list of titles. E.g. '5AE4RT2'
         self.story_ids = ftp_sesh.nlst()
 
         # Cycles through each line/Story ID and opens as a new file
         # RETRIEVE the contents of each Story ID from iNews and store it in new_story_file hen save to local_dir
-
         for story_id_title in self.story_ids:
-            self.epoch_time = int(time.time())
+            # self.epoch_time = int(time.time())
+            try:
+                with open(local_dir + story_id_title, "wb") as new_story_file:
+                    ftp_sesh.retrbinary("RETR " + story_id_title, new_story_file.write)
 
-            with open(local_dir + story_id_title, "wb") as new_story_file:
-                ftp_sesh.retrbinary("RETR " + story_id_title, new_story_file.write)
+            except ftp.error_perm:  # Catch RETR 'file not found' error, move onto next iteration
+                new_story_file.close()
+                continue
 
             new_story_file.close()
             counter += 1
-            self.epoch_time = int(time.time())
+            # self.epoch_time = int(time.time())
             if counter % 25 == 0:
                 self.app.console_log(export_path, color + str(counter) + ' stories pulled[/color]')
-
-        # # Close FTP connection
-        # self.app.ftp.quit()
 
     def convert_xml_to_dict(self, local_dir):
         # TODO: NOTE - focus, brk, and floated default false values removed, try and work App without these
@@ -321,16 +325,44 @@ class InewsPullSortSave:
             else:
                 story_dict['pos'] = None
 
-    def create_pv_version(self):
-        pass
+
+
+
+
+    def create_pv_version(self, export_path):
+        slices = [0]
+
+        for index, story_dict in enumerate(self.data):
+            if 'tm' in export_path or 'lw' in export_path:
+                if story_dict['page'] and story_dict['page'][-1] == '.':
+                    slices.append(index)
+            elif 'lk' in export_path:
+                if story_dict['page'][-2:] == '00':
+                    slices.append(index)
+
+
+
+        # Using the current and next index from slice, attempt to store chunks
+        # of self.data in new_dicts
+        for a, b in zip(slices, slices[1:] + [slices[0]]):
+            self.data_pv.append(self.data[a:b])
+
+        if not self.data_pv[-1]:
+            self.data_pv.pop()
+
+
+
+
 
     def create_json_files(self, export_path):
         """...Export..."""
         with open('exports/sv/' + export_path + '.json', 'w') as outfile:
             outfile.write(json.dumps(self.data, indent=4, sort_keys=True))
 
+        with open('exports/pv/' + export_path + '.json', 'w') as outfile:
+            outfile.write(json.dumps(self.data_pv, indent=4))
 
-        # Same for PV
+
 
 
 
