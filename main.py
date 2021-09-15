@@ -206,7 +206,7 @@ class ConsoleApp(MDApp):
 
     def on_stop(self):
         """
-        Run when the app is closed gracefully.
+        Run when the app is closed gracefully
         """
         for sesh in self.ftp_sessions.values():
             sesh.quit()
