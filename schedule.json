@@ -23,9 +23,9 @@
         "start_three": "10:00",
         "finish_three": "11:00",
         "freq_three": "3000",
-        "start_four": "11:00",
-        "finish_four": "12:00",
-        "freq_four": "3000"
+        "start_four": "15:00",
+        "finish_four": "21:00",
+        "freq_four": "51"
     },
     "tm": {
         "start_one": "07:00",
@@ -49,11 +49,11 @@
         "finish_two": "12:30",
         "freq_two": "60",
         "start_three": "12:30",
-        "finish_three": "13:07",
+        "finish_three": "13:30",
         "freq_three": "30",
-        "start_four": "13:07",
-        "finish_four": "14:45",
-        "freq_four": "51"
+        "start_four": "13:30",
+        "finish_four": "14:00",
+        "freq_four": "60"
     },
     "cs": {
         "start_one": "07:00",
@@ -65,8 +65,8 @@
         "start_three": "10:00",
         "finish_three": "11:00",
         "freq_three": "3000",
-        "start_four": "11:00",
-        "finish_four": "12:00",
-        "freq_four": "3000"
+        "start_four": "15:00",
+        "finish_four": "16:00",
+        "freq_four": "41"
     }
 }
