@@ -219,9 +219,15 @@ class InewsPullSortPush:
 
                 if not break_out_flag:
                     # Append story_dict to 'data' list
+                    # 1631780753
+                    # 1631704369
 
 
                     self.data.append(story_dict)
+                    # try:
+                    #     print(story_dict['air-date'])
+                    # except:
+                    #     pass
 
                 # Close story file
                 story_file.close()
@@ -260,30 +266,37 @@ class InewsPullSortPush:
 
         for d in self.data:
             try:
+                pass
+            except:
+                pass
+            try:
                 # 'air-date' comes in as epoch. converted to str(HH:MM:SS) sliced in to hrs, min, secs and converted
                 # back to int to calculate seconds from midnight...
-                air_hour = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[11:13])
+                air_hour = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[11:13])  # invalid int
                 air_min = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[14:16])
                 air_secs = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[17:19])
 
                 current_time = d['seconds'] = (air_hour * 3600) + (air_min * 60) + air_secs
-                next_time = current_time + int(d['total-time uec'])
+                next_time = current_time + int(d['totaltime uec'])
+
                 continue
             except (KeyError, ValueError):  # Key: 'total-time uec' not in every dict, Val: air-date
                 pass
 
             try:
                 current_time = d['seconds'] = int(d['back-time uec'][1:])
+                next_time = current_time
 
-                if 'total-time uec' in d:
-                    next_time = current_time + int(d['total-time uec'])
+                if 'totaltime uec' in d:
+                    next_time = current_time + int(d['totaltime uec'])
                 continue
             except KeyError:  # try only works if 'back-time uec' present
                 pass
 
-            if 'total-time uec' in d:
+            if 'totaltime uec' in d:
                 d['seconds'] = next_time
-                next_time += int(d['total-time uec'])
+                current_time = next_time
+                next_time += int(d['totaltime uec'])
             else:
                 d['seconds'] = current_time
 
@@ -294,7 +307,7 @@ class InewsPullSortPush:
             except:
                 pass
 
-            # print(d['page-number'], d['title'], str(datetime.timedelta(seconds=d['seconds'])))
+            print(d['page'], d['title'], str(datetime.timedelta(seconds=d['seconds'])))
 
     def finishing_touches(self):
         # Rundowns are divided into sections, aka items, defined by the dict['page'] parameter. Scrollview utilises
