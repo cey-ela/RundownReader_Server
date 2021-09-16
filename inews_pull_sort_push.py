@@ -290,7 +290,7 @@ class InewsPullSortPush:
                 if 'totaltime uec' in d:
                     next_time = current_time + int(d['totaltime uec'])
                 continue
-            except KeyError:  # try only works if 'back-time uec' present
+            except KeyError:  # try only bworks if 'back-time uec' present
                 pass
 
             if 'totaltime uec' in d:
