@@ -124,9 +124,9 @@ class ConsoleApp(MDApp):
         inews_conn = InewsPullSortPush()
         inews_conn.init_process(rundown, local_dir, export_path, color)
 
-        t = Thread(target=self.push_to_aws, args=(rundown, local_dir, export_path, color))
-        t.daemon = False
-        t.start()
+        # t = Thread(target=self.push_to_aws, args=(rundown, local_dir, export_path, color))
+        # t.daemon = False
+        # t.start()
 
     def push_to_aws(self, rundown, local_dir, export_path, color):
         """
