@@ -4,8 +4,8 @@ from botocore.exceptions import NoCredentialsError
 
 #
 def upload_to_aws(local_file, bucket, s3_file):
-    # with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-    with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
+    with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+    #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:
         aws_credentials = json.load(aws_creds)
         aws_access_key_id = aws_credentials[0]['aws_access_key_id']
         aws_secret_access_key = aws_credentials[0]['aws_secret_access_key']

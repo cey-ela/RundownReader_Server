@@ -1,6 +1,6 @@
 from kivy.config import Config
-Config.set('graphics', 'width', '850')
-Config.set('graphics', 'height', '950')
+Config.set('graphics', 'width', '900')
+Config.set('graphics', 'height', '900')
 from threading import Thread
 from kivymd.app import MDApp
 from kivy.clock import Clock
@@ -28,8 +28,8 @@ class ConsoleApp(MDApp):
     def __init__(self):
         super().__init__()
         # Retrieve iNews FTP credentials and IP from secure external source
-        # with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
+        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
         self.ip = inews_details[1]['ip']
         self.passwd = inews_details[1]['passwd']
@@ -56,6 +56,7 @@ class ConsoleApp(MDApp):
         """
         Called as the .kv elements are being constructed, post init()
         """
+        self.title = 'NEW SERVER'
         InewsPullSortPush.app = self  # how alternate .py files communicate back to the main App class
 
         # Populate each automation schedule input box. The boxes follow the same layout as schedule.json so both
@@ -96,10 +97,12 @@ class ConsoleApp(MDApp):
         if switch:  # If value from the switch being toggled is True/active/on
             try:  # If session exists, quit
                 self.ftp_sessions[prod].quit()
+                print('Closing connection: ' + str(self.ftp_sessions[prod]))
             except KeyError:
                 pass
             self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
             self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)
+            print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
             self.collect_rundown_thread(rundown, local_dir, export_path, color)
         else:
             self.console_log(local_dir[8:], color + "Process terminated")

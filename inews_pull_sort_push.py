@@ -63,8 +63,11 @@ class InewsPullSortPush:
     def pull_xml_via_ftp(self, inews_path, local_dir, export_path, color):
         # Start by making sure the target working folder is completely empty. If process previously exited early there
         # may be some remnants
-        for remnants in os.listdir(local_dir):
-            os.remove(local_dir + remnants)
+        try:
+            for remnants in os.listdir(local_dir):
+                os.remove(local_dir + remnants)
+        except PermissionError as e:
+            print(e)
 
         counter = 0  # Used to display amount of files in the output console
 
@@ -73,9 +76,13 @@ class InewsPullSortPush:
         ftp_sesh.cwd(inews_path)
 
 
+        try:  # this happen because of 'ftplib.error_reply: 200 TYPE A command successful.
+            # think this is from reusing old FTP conns
+            # Store story ID as list of titles. E.g. '5AE4RT2'
+            self.story_ids = ftp_sesh.nlst()
+        except :
+            print('FTP PULL ERROR - LINE 83')
 
-        # Store story ID as list of titles. E.g. '5AE4RT2'
-        self.story_ids = ftp_sesh.nlst()
 
         # Cycles through each line/Story ID and opens as a new file
         # RETRIEVE the contents of each Story ID from iNews and store it in new_story_file hen save to local_dir
@@ -276,38 +283,54 @@ class InewsPullSortPush:
                 air_min = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[14:16])
                 air_secs = int(str(datetime.datetime.fromtimestamp(int(d['air-date'])))[17:19])
 
+                # current_time, d['seconds'] = air-date time
                 current_time = d['seconds'] = (air_hour * 3600) + (air_min * 60) + air_secs
-                next_time = current_time + int(d['totaltime uec'])
 
+                # safely add next_time if total available
+                if 'totaltime uec' in d:
+                    next_time = current_time + int(d['totaltime uec'])
+
+                # convert seconds to readable back time
+                d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))
                 continue
             except (KeyError, ValueError):  # Key: 'total-time uec' not in every dict, Val: air-date
                 pass
 
             try:
+                # current_time, d['seconds'] = back-time
                 current_time = d['seconds'] = int(d['back-time uec'][1:])
+
+                # so first line of if statement below has a value to input on its first use
                 next_time = current_time
 
+                # override next_time if actual total exists
                 if 'totaltime uec' in d:
                     next_time = current_time + int(d['totaltime uec'])
+
+                # convert seconds to readable back time
+                d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))
                 continue
-            except KeyError:  # try only bworks if 'back-time uec' present
+            except KeyError:  # try only works if 'back-time uec' present
                 pass
 
+            # if total present
             if 'totaltime uec' in d:
-                d['seconds'] = next_time
-                current_time = next_time
-                next_time += int(d['totaltime uec'])
-            else:
-                d['seconds'] = current_time
+                d['seconds'] = next_time  # use the previously forecast time as new
+                current_time = next_time  # ^
+                next_time += int(d['totaltime uec'])  # new forecast for next time change
 
-            d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))
+            else:
+                d['seconds'] = current_time  # if time values at all, send current_time
+
+            d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))  # and update readable backtime
 
             try:
                 d.pop('back-time')  # rem
             except:
                 pass
 
-            print(d['page'], d['title'], str(datetime.timedelta(seconds=d['seconds'])))
+            # print(d['page'], d['title'], str(datetime.timedelta(seconds=d['seconds'])))
+
 
     def finishing_touches(self):
         # Rundowns are divided into sections, aka items, defined by the dict['page'] parameter. Scrollview utilises
