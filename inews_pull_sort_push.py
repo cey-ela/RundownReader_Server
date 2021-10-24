@@ -7,6 +7,7 @@ import glob
 import time
 import ftplib as ftp
 from func_timeout import func_timeout, FunctionTimedOut
+from kivy.clock import Clock
 
 
 class InewsPullSortPush:
@@ -14,6 +15,7 @@ class InewsPullSortPush:
     Pull it...sort it...push it...bop it!
     """
     app = None
+
     def __init__(self):
         super().__init__()
 
@@ -21,56 +23,61 @@ class InewsPullSortPush:
         self.data = []
         self.story_ids = []
         self.data_pv = []
+        self.error_count = 0
+        self.error_limit = 5
 
     def init_process(self, inews_path, local_dir, export_path, color):
         # 1ST
         self.app.console_log(export_path, color + 'Connecting...[/color]')
         try:
-            func_timeout(30, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
+            func_timeout(45, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
 
-        except FunctionTimedOut:
-            self.app.console_log(export_path, color + '...RETR cmd hung, retrying...[/color]')
-            # Rename log output, what errors actually cause what?, include timings
-            print('RETR cmd hung, retrying')
-            return self.init_process(inews_path, local_dir, export_path, color)
+        except (FunctionTimedOut, TimeoutError, FileNotFoundError, OSError) as e:
+            self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
+            print('iNews error, see terminal for info @ ' + str(datetime.datetime.now()) + ':\n' + str(e))
+            self.error_count += 1
+            if self.error_count <= self.error_limit:
+                print('Retrying in 15 seconds. Attempt ' + str(self.error_count) + '/5...\n')
+                time.sleep(15)
+                return self.init_process(inews_path, local_dir, export_path, color)
+            else:
+                self.app.console_log(export_path, color + 'Error limit reached. Processes stopped. See terminal[/color]')
+                print('Error cap of 5 has been exceeded. Shutting down. \n'
+                      'Please investigate and restart software when ready.')
+                for sesh in self.app.ftp_sessions.values():
+                    sesh.quit()
+                for switch in self.app.repeat_switches:
+                    self.app.repeat_switches[switch] = False
 
-        except TimeoutError:
-            self.app.console_log(export_path, color + '...connection to iNews timeout, check connection...[/color]')
-            print('General IP connection failure')
-            return self.init_process(inews_path, local_dir, export_path, color)
-
-
-        self.convert_xml_to_dict(local_dir)
-        self.app.console_log(export_path, color + "Converting stories from NSML to local dict[/color]")
-
-
-        self.set_backtimes()
-        self.app.console_log(export_path, color + "Calculating backtimes[/color]")
-
-
-        self.finishing_touches()
-
+        if self.error_count < self.error_limit:
+            self.convert_xml_to_dict(local_dir)
+            self.app.console_log(export_path, color + "Converting stories from NSML to local dict[/color]")
 
 
-        self.create_pv_version(export_path)
+            self.set_backtimes()
+            self.app.console_log(export_path, color + "Calculating backtimes[/color]")
 
 
-        self.create_json_files(export_path)
-        self.app.console_log(export_path, color + "Converting dict to json[/color]")
+            self.finishing_touches()
 
+
+            self.create_pv_version(export_path)
+
+
+            self.create_json_files(export_path)
+            self.app.console_log(export_path, color + "Converting dict to json[/color]")
 
 
     def pull_xml_via_ftp(self, inews_path, local_dir, export_path, color):
         # Start by making sure the target working folder is completely empty. If process previously exited early there
         # may be some remnants
-        try:
-            for remnants in os.listdir(local_dir):
-                os.remove(local_dir + remnants)
-        except PermissionError as e:
-            print(e)
+        # try:
+        #     for remnants in os.listdir(local_dir):
+        #         os.remove(local_dir + remnants)
+        # except PermissionError as e:
+        #     print(e)
 
         counter = 0  # Used to display amount of files in the output console
-
         ftp_sesh = self.app.ftp_sessions[export_path[3:]]
 
         ftp_sesh.cwd(inews_path)
@@ -80,9 +87,11 @@ class InewsPullSortPush:
             # think this is from reusing old FTP conns
             # Store story ID as list of titles. E.g. '5AE4RT2'
             self.story_ids = ftp_sesh.nlst()
-        except :
-            print('FTP PULL ERROR - LINE 83')
+        except ftp.error_reply as e:
+            print(e)
 
+        if not self.story_ids:
+            raise FileNotFoundError
 
         # Cycles through each line/Story ID and opens as a new file
         # RETRIEVE the contents of each Story ID from iNews and store it in new_story_file hen save to local_dir
@@ -240,7 +249,10 @@ class InewsPullSortPush:
                 story_file.close()
 
                 # 8) Deletes the file we just read as it's no longer needed
-                os.remove(local_dir + story_id_title)
+                try:
+                    os.remove(local_dir + story_id_title)
+                except PermissionError as e:
+                    print(e)
 
     def set_backtimes(self):
         """
@@ -272,10 +284,7 @@ class InewsPullSortPush:
         # current item will end and the next one begins
 
         for d in self.data:
-            try:
-                pass
-            except:
-                pass
+
             try:
                 # 'air-date' comes in as epoch. converted to str(HH:MM:SS) sliced in to hrs, min, secs and converted
                 # back to int to calculate seconds from midnight...

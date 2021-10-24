@@ -17,6 +17,9 @@ from kivy import properties as kp
 class ConsoleApp(MDApp):
     """
     ..the epicenter...
+    Be mindful to always open and close FTP sessions to the iNews server properly. It is a production server sitting
+    at the core of the Newsroom and arguably the most important.
+
     """
     gb_log = kp.ListProperty()  # lists used to store the output console text
     lk_log = kp.ListProperty()  # ^
@@ -28,8 +31,8 @@ class ConsoleApp(MDApp):
     def __init__(self):
         super().__init__()
         # Retrieve iNews FTP credentials and IP from secure external source
-        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
+        #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
         self.ip = inews_details[1]['ip']
         self.passwd = inews_details[1]['passwd']
@@ -51,6 +54,12 @@ class ConsoleApp(MDApp):
 
         with open('schedule.json') as sched:  # Amendable schedule saved in ext .json to survive app restarts
             self.schedule = json.load(sched)
+
+
+        with open('log.txt', 'r') as f_in:
+            data = f_in.read().splitlines(True)
+        with open('log.txt', 'w') as f_out:
+            f_out.writelines(data[-2000:])
 
     def build(self):
         """
@@ -98,14 +107,24 @@ class ConsoleApp(MDApp):
             try:  # If session exists, quit
                 self.ftp_sessions[prod].quit()
                 print('Closing connection: ' + str(self.ftp_sessions[prod]))
-            except KeyError:
-                pass
-            self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
-            self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)
-            print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
-            self.collect_rundown_thread(rundown, local_dir, export_path, color)
-        else:
-            self.console_log(local_dir[8:], color + "Process terminated")
+            except (KeyError, AttributeError):
+                pass  # Key doesn't exist before first run-through
+            try:
+                self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
+                self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
+                print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
+            except OSError:  # Handles network disconnect error
+                print('Network is unreachable. Check internet connection')
+                self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
+                return
+
+            self.collect_rundown_thread(rundown, local_dir, export_path, color)  # Begin next step on new thread
+        else:  # If switch is turned off. Close FTP conn gracefully and remove it from the ftp_sessions dict
+            print('Closing FTP connection: ' + str(self.ftp_sessions[prod]))
+            self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn. Conns remaining open:")
+            self.ftp_sessions[prod].quit()
+            del self.ftp_sessions[prod]
+            self.console_log(local_dir[8:], str(self.ftp_sessions))
 
     def collect_rundown_thread(self, rundown, local_dir, export_path, color):
         """
@@ -119,25 +138,45 @@ class ConsoleApp(MDApp):
     def collect_rundown(self, rundown, local_dir, export_path, color):
         """
         Create a new instance of the iNews process class and initialise the sequence of methods within. See
-        inews_pull_sort_push.py for details. Once complete start a thread for the next method
+        inews_pull_sort_push.py for details.
+        Compare the results of the latest iNews download against the previous file, if identical, skip AWS upload.
+        If the new file is empty then skip the upload, this is just so the App doesn't show an empty screen
+        If neither of these statements are true then proceed to upload to AWS via a new thread
         """
-        inews_conn = InewsPullSortPush()
-        inews_conn.init_process(rundown, local_dir, export_path, color)
 
-        # t = Thread(target=self.push_to_aws, args=(rundown, local_dir, export_path, color))
-        # t.daemon = False
-        # t.start()
+        with open('exports/sv/' + export_path + '.json') as file:
+            last_export = json.load(file)  # Compare last file...
+
+        inews_conn = InewsPullSortPush()
+        inews_conn.init_process(rundown, local_dir, export_path, color)  # ...(update file)...
+
+        with open('exports/sv/' + export_path + '.json') as file:
+            new_export = json.load(file)  #...against the new file
+
+        if last_export == new_export:  # If they match, proceed to countdown
+            self.console_log(local_dir[8:], color + "File same as last AWS push. Skipping upload.[/color]")
+            self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
+        elif not new_export:  # or if the file == []
+            self.console_log(local_dir[8:], color + "New export empty. Skipping upload.[/color]")
+            self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
+        else:  # Otherwise proceed to AWS upload via new Thread
+            t = Thread(target=self.push_to_aws, args=(rundown, local_dir, export_path, color))
+            t.daemon = False
+            t.start()
 
     def push_to_aws(self, rundown, local_dir, export_path, color):
         """
         Once new pv/sv export files have been created, push to AWS (see s3_connection.py)
         establish how long the next countdown() should take and run it
         """
-        upload_to_aws('exports/pv/' + export_path + '.json', 'rundowns', 'pv/' + export_path)
-        upload_to_aws('exports/sv/' + export_path + '.json', 'rundowns', 'sv/' + export_path)
-        duration = self.determine_frequency(local_dir[8:10])
-        self.console_log(local_dir[8:], color + "Uploading json files to AWS[/color]")
-        self.countdown(duration, rundown, local_dir, export_path, color)
+        if self.repeat_switches[export_path[3:]]:
+
+            upload_to_aws('exports/pv/' + export_path + '.json', 'rundowns', 'pv/' + export_path)
+            upload_to_aws('exports/sv/' + export_path + '.json', 'rundowns', 'sv/' + export_path)
+
+            duration = self.determine_frequency(local_dir[8:10])
+            self.console_log(local_dir[8:], color + "Uploading json files to AWS[/color]")
+            self.countdown(duration, rundown, local_dir, export_path, color)
 
     def countdown(self, duration, rundown, local_dir, export_path, color):
         """
@@ -189,7 +228,7 @@ class ConsoleApp(MDApp):
 
     def console_log(self, filename, text):
         """
-        Update the output console
+        Update the output console and update log.txt
         :param text: new line of text to display
         :return:
         """
@@ -198,6 +237,8 @@ class ConsoleApp(MDApp):
         log = getattr(self, filename[:2] + '_log')  # define log/list to update
 
         log.append(text)  # add text received as argument
+        with open("log.txt", "a") as logfile:
+            logfile.write(str(datetime.now())[:-7] + ' ' + filename[:2].upper() + ' ' + text[17:-8] + '\n')
 
         if len(log) > 11:  # keep the log fewer than 11 rows
             log.pop(0)
