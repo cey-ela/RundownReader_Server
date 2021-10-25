@@ -30,7 +30,7 @@ class ConsoleApp(MDApp):
 
     def __init__(self):
         super().__init__()
-        # Retrieve iNews FTP credentials and IP from secure external source
+        #x Retrieve iNews FTP credentials and IP from secure external source
         #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
         with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)

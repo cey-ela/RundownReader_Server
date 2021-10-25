@@ -27,7 +27,7 @@ class InewsPullSortPush:
         self.error_limit = 5
 
     def init_process(self, inews_path, local_dir, export_path, color):
-        # 1ST
+        # 1STx
         self.app.console_log(export_path, color + 'Connecting...[/color]')
         try:
             func_timeout(45, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
