@@ -32,15 +32,26 @@ class InewsPullSortPush:
         try:
             func_timeout(45, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
 
-        except (FunctionTimedOut, TimeoutError, FileNotFoundError, OSError) as e:
+        except ftp.error_reply as e:  # If the process times out during the RETR pull, you may see this error
+            # on its next retry. Simply rerunning will not work. Exit FTP connection and reestablish
+            self.app.inews_disconnect(local_dir, export_path, color)
+            print(str(e) + str(datetime.datetime.now()) + ' waiting 15 seconds until retry')
             self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
-            print('iNews error, see terminal for info @ ' + str(datetime.datetime.now()) + ':\n' + str(e))
+            time.sleep(15)
+            self.app.inews_connect(local_dir, export_path, color)
+
+        except FileNotFoundError:  # Rundown is empty, early exit/return back to main countdown/repeat
+            return
+
+        except (FunctionTimedOut, TimeoutError, OSError) as e:
+            self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
+            print('iNews error @ ' + str(datetime.datetime.now()) + ':\n' + str(e))
             self.error_count += 1
             if self.error_count <= self.error_limit:
                 print('Retrying in 15 seconds. Attempt ' + str(self.error_count) + '/5...\n')
                 time.sleep(15)
                 return self.init_process(inews_path, local_dir, export_path, color)
-            else:
+            else:  # If error cap is reached. Gracefully shut down.
                 self.app.console_log(export_path, color + 'Error limit reached. Processes stopped. See terminal[/color]')
                 print('Error cap of 5 has been exceeded. Shutting down. \n'
                       'Please investigate and restart software when ready.')
@@ -78,7 +89,7 @@ class InewsPullSortPush:
         #     print(e)
 
         counter = 0  # Used to display amount of files in the output console
-        ftp_sesh = self.app.ftp_sessions[export_path[3:]]
+        ftp_sesh = self.app.ftp_sessions[export_path[3:5]]
 
         ftp_sesh.cwd(inews_path)
 
@@ -123,7 +134,7 @@ class InewsPullSortPush:
         <rgroup number=46></rgroup>
         <wgroup number=18></wgroup>
         <formname>THISMORNINGS_V2</formname>
-        7<storyid>259847d2:00ce0ba3:605b6fc5</storyid>
+        7<storyid>259847d2:00ce0ba3:505b6fc5</storyid>
         </head>
         <story>
         <fields>
@@ -222,10 +233,10 @@ class InewsPullSortPush:
                             value = value.replace('gt;', '')
 
                         if 'page' in key:  # change key from 'page-number' to 'page'
-                            key = key[:4]
+                            key = 'page'
 
                         if 'total' in key:  # change key from 'total-time' to 'time'
-                            key = key[:5] + key[6:]
+                            key = 'total'
 
                         story_dict['focus'] = False
 
@@ -296,8 +307,8 @@ class InewsPullSortPush:
                 current_time = d['seconds'] = (air_hour * 3600) + (air_min * 60) + air_secs
 
                 # safely add next_time if total available
-                if 'totaltime uec' in d:
-                    next_time = current_time + int(d['totaltime uec'])
+                if 'total' in d:
+                    next_time = current_time + int(d['total'])
 
                 # convert seconds to readable back time
                 d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))
@@ -313,8 +324,8 @@ class InewsPullSortPush:
                 next_time = current_time
 
                 # override next_time if actual total exists
-                if 'totaltime uec' in d:
-                    next_time = current_time + int(d['totaltime uec'])
+                if 'total' in d:
+                    next_time = current_time + int(d['total'])
 
                 # convert seconds to readable back time
                 d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))
@@ -323,10 +334,12 @@ class InewsPullSortPush:
                 pass
 
             # if total present
-            if 'totaltime uec' in d:
+            if 'total' in d:
+                if not d['total']:
+                    d['total'] = '0'
                 d['seconds'] = next_time  # use the previously forecast time as new
                 current_time = next_time  # ^
-                next_time += int(d['totaltime uec'])  # new forecast for next time change
+                next_time += int(d['total'])  # new forecast for next time change
 
             else:
                 d['seconds'] = current_time  # if time values at all, send current_time
@@ -353,22 +366,26 @@ class InewsPullSortPush:
 
         # slope
         m = 0.001 / 0.05
+
         for index, story_dict in enumerate(reversed(self.data)):
+            try:  # Catch occasional smaller dicts
+                if story_dict['page'][-2:] == '00' or story_dict['page'][-1:] == '.':
 
-            if story_dict['page'][-2:] == '00' or story_dict['page'][-1:] == '.':
+                    pos = (index / len(self.data))
 
-                pos = (index / len(self.data))
+                    if 0.5 <= pos < 0.98:
+                        offset = round(round(m * pos + b_pos, 10), 3)
+                        pos += abs(offset)
+                    elif 0.02 <= pos < 0.5:
+                        offset = round(round(m * pos + b_neg, 10), 3)
+                        pos -= abs(offset)
 
-                if 0.5 <= pos < 0.98:
-                    offset = round(round(m * pos + b_pos, 10), 3)
-                    pos += abs(offset)
-                elif 0.02 <= pos < 0.5:
-                    offset = round(round(m * pos + b_neg, 10), 3)
-                    pos -= abs(offset)
+                    story_dict['pos'] = round(pos, 3)
+                else:
+                    story_dict['pos'] = None
 
-                story_dict['pos'] = round(pos, 3)
-            else:
-                story_dict['pos'] = None
+            except KeyError as e:
+                print('key error: ' + str(e))
 
 
 
@@ -378,13 +395,15 @@ class InewsPullSortPush:
         slices = [0]
 
         for index, story_dict in enumerate(self.data):
-            if 'tm' in export_path or 'lw' in export_path:
-                if story_dict['page'] and story_dict['page'][-1] == '.':
-                    slices.append(index)
-            elif 'lk' in export_path:
-                if story_dict['page'][-2:] == '00':
-                    slices.append(index)
-
+            try:
+                if 'tm' in export_path or 'lw' in export_path:
+                    if story_dict['page'] and story_dict['page'][-1] == '.':
+                        slices.append(index)
+                elif 'lk' in export_path:
+                    if story_dict['page'][-2:] == '00':
+                        slices.append(index)
+            except KeyError as e:
+                print('key error: ' + str(e))
 
 
         # Using the current and next index from slice, attempt to store chunks

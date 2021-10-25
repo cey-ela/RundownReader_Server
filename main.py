@@ -55,7 +55,6 @@ class ConsoleApp(MDApp):
         with open('schedule.json') as sched:  # Amendable schedule saved in ext .json to survive app restarts
             self.schedule = json.load(sched)
 
-
         with open('log.txt', 'r') as f_in:
             data = f_in.read().splitlines(True)
         with open('log.txt', 'w') as f_out:
@@ -87,6 +86,42 @@ class ConsoleApp(MDApp):
         with open('schedule.json', 'w') as f:
             f.write(json.dumps(self.schedule, indent=4))
 
+
+    def inews_connect(self, local_dir, export_path, color):
+        prod = export_path[3:5]  # = gb / lk / tm / lw / cs
+
+        try:  # If session exists, quit
+            self.ftp_sessions[prod].quit()
+            print('Closing connection: ' + str(self.ftp_sessions[prod]))
+        except (KeyError, AttributeError):
+            pass  # Key doesn't exist before first run-through
+
+        try:
+            self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
+            self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
+            print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
+        except OSError:  # Handles network disconnect error
+            print('Network is unreachable. Check internet connection')
+            return self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
+
+
+    def inews_disconnect(self, local_dir, export_path, color):
+        prod = export_path[3:5]  # = gb / lk / tm / lw / cs
+
+        if prod == 'al':
+            for sesh in self.ftp_sessions.values():
+                sesh.quit()
+                print(str(sesh) + ': connection has been closed')
+        else:
+            self.ftp_sessions[prod].quit()
+            print('Closing FTP connection: ' + str(self.ftp_sessions[prod]) + 'Conns remaining open:')
+            del self.ftp_sessions[prod]
+            print(str(self.ftp_sessions))
+            self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn.")
+
+
+
+
     def rundown_switch(self, switch, rundown, local_dir, export_path, color):
         """
         Called when the switch in the 'START' column is toggled to start/stop the sequence of methods
@@ -100,37 +135,40 @@ class ConsoleApp(MDApp):
         :param export_path: the AWS dir
         :param color: used to color output console text correctly
         """
-        prod = export_path[3:]  # = gb / lk / tm / lw / cs
+        prod = export_path[3:5]  # = gb / lk / tm / lw / cs
         self.repeat_switches[prod] = switch  # Update dict used at the end of the countdown repeat - yes/no
 
         if switch:  # If value from the switch being toggled is True/active/on
-            try:  # If session exists, quit
-                self.ftp_sessions[prod].quit()
-                print('Closing connection: ' + str(self.ftp_sessions[prod]))
-            except (KeyError, AttributeError):
-                pass  # Key doesn't exist before first run-through
-            try:
-                self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
-                self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
-                print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
-            except OSError:  # Handles network disconnect error
-                print('Network is unreachable. Check internet connection')
-                self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
-                return
+            # try:  # If session exists, quit
+            #     self.ftp_sessions[prod].quit()
+            #     print('Closing connection: ' + str(self.ftp_sessions[prod]))
+            # except (KeyError, AttributeError):
+            #     pass  # Key doesn't exist before first run-through
+            # try:
+            #     self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
+            #     self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
+            #     print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
+            # except OSError:  # Handles network disconnect error
+            #     print('Network is unreachable. Check internet connection')
+            #     self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
+            #     return
+            self.inews_connect(local_dir, export_path, color)
 
             self.collect_rundown_thread(rundown, local_dir, export_path, color)  # Begin next step on new thread
+
         else:  # If switch is turned off. Close FTP conn gracefully and remove it from the ftp_sessions dict
-            print('Closing FTP connection: ' + str(self.ftp_sessions[prod]))
-            self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn. Conns remaining open:")
-            self.ftp_sessions[prod].quit()
-            del self.ftp_sessions[prod]
-            self.console_log(local_dir[8:], str(self.ftp_sessions))
+            # print('Closing FTP connection: ' + str(self.ftp_sessions[prod]))
+            # self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn. Conns remaining open:")
+            # self.ftp_sessions[prod].quit()
+            # del self.ftp_sessions[prod]
+            # self.console_log(local_dir[8:], str(self.ftp_sessions))
+            self.inews_disconnect(local_dir, export_path, color)
 
     def collect_rundown_thread(self, rundown, local_dir, export_path, color):
         """
             Threads are used in Kivy to prevent graphical locking of the interface
         """
-        if self.repeat_switches[export_path[3:]]:
+        if self.repeat_switches[export_path[3:5]]:
             t = Thread(target=self.collect_rundown, args=(rundown, local_dir, export_path, color))
             t.daemon = True
             t.start()
@@ -156,9 +194,9 @@ class ConsoleApp(MDApp):
         if last_export == new_export:  # If they match, proceed to countdown
             self.console_log(local_dir[8:], color + "File same as last AWS push. Skipping upload.[/color]")
             self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
-        elif not new_export:  # or if the file == []
-            self.console_log(local_dir[8:], color + "New export empty. Skipping upload.[/color]")
-            self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
+        # elif not new_export:  # if the file == []
+        #     self.console_log(local_dir[8:], color + "New export empty. Skipping upload.[/color]")
+        #     self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
         else:  # Otherwise proceed to AWS upload via new Thread
             t = Thread(target=self.push_to_aws, args=(rundown, local_dir, export_path, color))
             t.daemon = False
@@ -169,7 +207,7 @@ class ConsoleApp(MDApp):
         Once new pv/sv export files have been created, push to AWS (see s3_connection.py)
         establish how long the next countdown() should take and run it
         """
-        if self.repeat_switches[export_path[3:]]:
+        if self.repeat_switches[export_path[3:5]]:
 
             upload_to_aws('exports/pv/' + export_path + '.json', 'rundowns', 'pv/' + export_path)
             upload_to_aws('exports/sv/' + export_path + '.json', 'rundowns', 'sv/' + export_path)
@@ -184,11 +222,11 @@ class ConsoleApp(MDApp):
         When duration == 0 and if the switch has remained on, repeat the entire process
         :param duration: time remaining
         """
-        if duration == 0 and self.repeat_switches[export_path[3:]]:
+        if duration == 0 and self.repeat_switches[export_path[3:5]]:
             return self.collect_rundown_thread(rundown, local_dir, export_path, color)
 
         duration -= 1
-        if self.repeat_switches[export_path[3:]]:  # If start switch hasn't been deactivated
+        if self.repeat_switches[export_path[3:5]]:  # If start switch hasn't been deactivated
             Clock.schedule_once(lambda dt: self.countdown(duration, rundown, local_dir, export_path, color), 1)
             if duration % 5 == 0:  # Update console every 5 seconds
                 self.console_log(local_dir[8:], color + "Repeating  process in " + str(duration) + " seconds[/color]")
@@ -252,9 +290,7 @@ class ConsoleApp(MDApp):
         """
         Run when the app is closed gracefully
         """
-        for sesh in self.ftp_sessions.values():
-            sesh.quit()
-            print(str(sesh) + ': connection has been closed')
+        self.inews_disconnect('local_dir', 'endall', '0123456')
         print('cya')
 
 

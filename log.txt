@@ -196,3 +196,410 @@
 2021-10-24 18:45:12 LK Repeating  process in 20 seconds
 2021-10-24 18:45:15 LK Process terminated. Closing FTP conn. Conns remaini
 2021-10-24 18:45:15 LK 
+2021-10-25 13:31:56 LW Connecting...
+2021-10-25 13:31:56 LW 25 stories pulled
+2021-10-25 13:31:57 LW 50 stories pulled
+2021-10-25 13:31:57 LW 75 stories pulled
+2021-10-25 13:31:57 LW 100 stories pulled
+2021-10-25 13:31:57 LW 125 stories pulled
+2021-10-25 13:31:58 LW 150 stories pulled
+2021-10-25 13:31:58 LW 175 stories pulled
+2021-10-25 13:31:58 LW 200 stories pulled
+2021-10-25 13:31:58 LW 225 stories pulled
+2021-10-25 13:31:59 LW Converting stories from NSML to local dict
+2021-10-25 13:31:59 LW Calculating backtimes
+2021-10-25 13:31:59 LW Converting dict to json
+2021-10-25 13:31:59 LW Uploading json files to AWS
+2021-10-25 13:32:03 LW Repeating  process in 25 seconds
+2021-10-25 13:32:04 LW Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 13:32:04 LW 
+2021-10-25 14:16:18 LW Connecting...
+2021-10-25 14:16:21 LW Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:16:21 LW 
+2021-10-25 14:17:02 LW Connecting...
+2021-10-25 14:17:02 LW 25 stories pulled
+2021-10-25 14:17:03 LW 50 stories pulled
+2021-10-25 14:17:03 LW 75 stories pulled
+2021-10-25 14:17:03 LW 100 stories pulled
+2021-10-25 14:17:03 LW 125 stories pulled
+2021-10-25 14:17:04 LW 150 stories pulled
+2021-10-25 14:17:04 LW 175 stories pulled
+2021-10-25 14:17:04 LW 200 stories pulled
+2021-10-25 14:17:04 LW 225 stories pulled
+2021-10-25 14:17:05 LW Converting stories from NSML to local dict
+2021-10-25 14:17:05 LW Calculating backtimes
+2021-10-25 14:17:05 LW Converting dict to json
+2021-10-25 14:17:05 LW File same as last AWS push. Skipping upload.
+2021-10-25 14:17:09 LW Repeating  process in 25 seconds
+2021-10-25 14:17:10 LW Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:17:10 LW 
+2021-10-25 14:17:14 LW Connecting...
+2021-10-25 14:17:15 LW 25 stories pulled
+2021-10-25 14:17:15 LW 50 stories pulled
+2021-10-25 14:17:15 LW 75 stories pulled
+2021-10-25 14:17:15 LW 100 stories pulled
+2021-10-25 14:17:16 LW 125 stories pulled
+2021-10-25 14:17:16 LW 150 stories pulled
+2021-10-25 14:17:16 LW 175 stories pulled
+2021-10-25 14:17:16 LW 200 stories pulled
+2021-10-25 14:17:17 LW 225 stories pulled
+2021-10-25 14:17:17 LW Converting stories from NSML to local dict
+2021-10-25 14:17:17 LW Calculating backtimes
+2021-10-25 14:17:17 LW Converting dict to json
+2021-10-25 14:17:17 LW Uploading json files to AWS
+2021-10-25 14:17:21 LW Repeating  process in 25 seconds
+2021-10-25 14:17:24 LW Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:17:24 LW 
+2021-10-25 14:17:25 LK Connecting...
+2021-10-25 14:17:26 LK  iNews error, see terminal for info
+2021-10-25 14:17:41 LK Connecting...
+2021-10-25 14:17:41 LK  iNews error, see terminal for info
+2021-10-25 14:17:42 LK Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:17:42 LK 
+2021-10-25 14:17:56 LK Connecting...
+2021-10-25 14:21:09 LK Connecting...
+2021-10-25 14:21:13 LK Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:21:13 LK 
+2021-10-25 14:26:01 LK Connecting...
+2021-10-25 14:26:01 LK File same as last AWS push. Skipping upload.
+2021-10-25 14:26:05 LK Repeating  process in 25 seconds
+2021-10-25 14:26:10 LK Repeating  process in 20 seconds
+2021-10-25 14:26:15 LK Repeating  process in 15 seconds
+2021-10-25 14:26:20 LK Repeating  process in 10 seconds
+2021-10-25 14:26:25 LK Repeating  process in 5 seconds
+2021-10-25 14:26:30 LK Repeating  process in 0 seconds
+2021-10-25 14:26:31 LK Connecting...
+2021-10-25 14:26:31 LK File same as last AWS push. Skipping upload.
+2021-10-25 14:26:35 LK Repeating  process in 25 seconds
+2021-10-25 14:26:40 LK Repeating  process in 20 seconds
+2021-10-25 14:26:45 LK Repeating  process in 15 seconds
+2021-10-25 14:26:50 LK Repeating  process in 10 seconds
+2021-10-25 14:26:52 LK Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:26:52 LK 
+2021-10-25 14:31:07 LW Connecting...
+2021-10-25 14:31:08 LW 25 stories pulled
+2021-10-25 14:31:08 LW 50 stories pulled
+2021-10-25 14:31:08 LW 75 stories pulled
+2021-10-25 14:31:08 LW 100 stories pulled
+2021-10-25 14:31:09 LW 125 stories pulled
+2021-10-25 14:31:09 LW 150 stories pulled
+2021-10-25 14:31:09 LW 175 stories pulled
+2021-10-25 14:31:09 LW 200 stories pulled
+2021-10-25 14:31:09 LW 225 stories pulled
+2021-10-25 14:31:10 LW Converting stories from NSML to local dict
+2021-10-25 14:31:10 LW Calculating backtimes
+2021-10-25 14:31:10 LW Converting dict to json
+2021-10-25 14:31:10 LW File same as last AWS push. Skipping upload.
+2021-10-25 14:31:14 LW Repeating  process in 25 seconds
+2021-10-25 14:31:15 LW Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:31:15 LW 
+2021-10-25 14:31:28 LW Connecting...
+2021-10-25 14:31:28 LW 25 stories pulled
+2021-10-25 14:31:29 LW 50 stories pulled
+2021-10-25 14:31:29 LW 75 stories pulled
+2021-10-25 14:31:29 LW 100 stories pulled
+2021-10-25 14:31:29 LW 125 stories pulled
+2021-10-25 14:31:30 LW 150 stories pulled
+2021-10-25 14:31:30 LW 175 stories pulled
+2021-10-25 14:31:30 LW 200 stories pulled
+2021-10-25 14:31:30 LW 225 stories pulled
+2021-10-25 14:31:30 LW Converting stories from NSML to local dict
+2021-10-25 14:31:30 LW Calculating backtimes
+2021-10-25 14:31:30 LW Converting dict to json
+2021-10-25 14:31:30 LW File same as last AWS push. Skipping upload.
+2021-10-25 14:31:33 LK Connecting...
+2021-10-25 14:31:33 LK File same as last AWS push. Skipping upload.
+2021-10-25 14:31:34 LW Repeating  process in 25 seconds
+2021-10-25 14:31:37 LK Repeating  process in 25 seconds
+2021-10-25 14:31:39 LK Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 14:31:39 LK P object at 0x7fefde
+2021-10-25 14:31:39 LW Repeating  process in 20 seconds
+2021-10-25 15:01:03 LK Connecting...
+2021-10-25 15:01:03 LK File same as last AWS push. Skipping upload.
+2021-10-25 15:01:07 LK Repeating  process in 25 seconds
+2021-10-25 15:01:09 LK Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 15:01:09 LK 
+2021-10-25 15:01:15 LW Connecting...
+2021-10-25 15:01:15 LW File same as last AWS push. Skipping upload.
+2021-10-25 15:01:19 LW Repeating  process in 25 seconds
+2021-10-25 15:01:24 LW Repeating  process in 20 seconds
+2021-10-25 15:01:27 LW Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 15:01:27 LW 
+2021-10-25 15:01:29 LW Connecting...
+2021-10-25 15:01:29 LW 25 stories pulled
+2021-10-25 15:01:30 LW 50 stories pulled
+2021-10-25 15:01:30 LW 75 stories pulled
+2021-10-25 15:01:30 LW 100 stories pulled
+2021-10-25 15:01:30 LW 125 stories pulled
+2021-10-25 15:01:30 LW 150 stories pulled
+2021-10-25 15:01:31 LW 175 stories pulled
+2021-10-25 15:01:31 LW 200 stories pulled
+2021-10-25 15:01:31 LW 225 stories pulled
+2021-10-25 15:01:31 LW Converting stories from NSML to local dict
+2021-10-25 15:01:31 LW Calculating backtimes
+2021-10-25 15:01:31 LW Converting dict to json
+2021-10-25 15:01:32 LW Uploading json files to AWS
+2021-10-25 15:01:36 LW Repeating  process in 25 seconds
+2021-10-25 15:01:41 LW Process terminated. Closing FTP conn. Conns remaini
+2021-10-25 15:01:41 LW 
+2021-10-25 15:05:29 LW Connecting...
+2021-10-25 15:05:30 LW 25 stories pulled
+2021-10-25 15:05:30 LW 50 stories pulled
+2021-10-25 15:05:31 LW 75 stories pulled
+2021-10-25 15:05:31 LW 100 stories pulled
+2021-10-25 15:05:31 LW 125 stories pulled
+2021-10-25 15:05:31 LW 150 stories pulled
+2021-10-25 15:05:32 LW 175 stories pulled
+2021-10-25 15:05:32 LW 200 stories pulled
+2021-10-25 15:05:32 LW 225 stories pulled
+2021-10-25 15:05:32 LW Converting stories from NSML to local dict
+2021-10-25 15:05:32 LW Calculating backtimes
+2021-10-25 15:05:32 LW Converting dict to json
+2021-10-25 15:05:32 LW File same as last AWS push. Skipping upload.
+2021-10-25 15:05:36 LW Repeating  process in 25 seconds
+2021-10-25 15:05:37 LW Process terminated. Closing F
+2021-10-25 15:14:12 LW Connecting...
+2021-10-25 15:14:12 LW 25 stories pulled
+2021-10-25 15:14:12 LW 50 stories pulled
+2021-10-25 15:14:13 LW 75 stories pulled
+2021-10-25 15:14:13 LW 100 stories pulled
+2021-10-25 15:14:13 LW 125 stories pulled
+2021-10-25 15:14:14 LW 150 stories pulled
+2021-10-25 15:14:32 LW  iNews error, see terminal for info
+2021-10-25 15:14:47 LW Connecting...
+2021-10-25 15:14:47 LW  iNews error, see terminal for info
+2021-10-25 15:15:02 LW Connecting...
+2021-10-25 15:15:02 LW  iNews error, see terminal for info
+2021-10-25 15:15:17 LW Connecting...
+2021-10-25 15:15:17 LW  iNews error, see terminal for info
+2021-10-25 15:15:32 LW Connecting...
+2021-10-25 15:15:32 LW  iNews error, see terminal for info
+2021-10-25 15:15:47 LW Connecting...
+2021-10-25 15:15:47 LW  iNews error, see terminal for info
+2021-10-25 15:15:47 LW Error limit reached. Processes stopped. See terminal
+2021-10-25 15:24:38 CS Connecting...
+2021-10-25 15:24:38 CS 25 stories pulled
+2021-10-25 15:24:39 CS 50 stories pulled
+2021-10-25 15:24:39 CS 75 stories pulled
+2021-10-25 15:24:39 CS 100 stories pulled
+2021-10-25 15:24:39 CS 125 stories pulled
+2021-10-25 15:24:40 CS 150 stories pulled
+2021-10-25 15:24:40 CS 175 stories pulled
+2021-10-25 15:24:40 CS 200 stories pulled
+2021-10-25 15:24:40 CS 225 stories pulled
+2021-10-25 15:24:41 CS Converting stories from NSML to local dict
+2021-10-25 15:24:41 CS Calculating backtimes
+2021-10-25 15:24:41 CS Converting dict to json
+2021-10-25 15:24:41 CS Uploading json files to AWS
+2021-10-25 15:24:45 CS Repeating  process in 25 seconds
+2021-10-25 15:24:50 CS Repeating  process in 20 seconds
+2021-10-25 15:24:55 CS Repeating  process in 15 seconds
+2021-10-25 15:25:01 CS Repeating  process in 10 seconds
+2021-10-25 15:25:06 CS Repeating  process in 5 seconds
+2021-10-25 15:25:11 CS Repeating  process in 0 seconds
+2021-10-25 15:25:12 CS Connecting...
+2021-10-25 15:25:12 CS 25 stories pulled
+2021-10-25 15:25:12 CS 50 stories pulled
+2021-10-25 15:25:12 CS 75 stories pulled
+2021-10-25 15:25:12 CS 100 stories pulled
+2021-10-25 15:25:13 CS 125 stories pulled
+2021-10-25 15:25:13 CS 150 stories pulled
+2021-10-25 15:25:13 CS 175 stories pulled
+2021-10-25 15:25:13 CS 200 stories pulled
+2021-10-25 15:25:14 CS 225 stories pulled
+2021-10-25 15:25:14 CS Converting stories from NSML to local dict
+2021-10-25 15:25:14 CS Calculating backtimes
+2021-10-25 15:25:14 CS Converting dict to json
+2021-10-25 15:25:14 CS File same as last AWS push. Skipping upload.
+2021-10-25 15:25:18 CS Repeating  process in 295 seconds
+2021-10-25 15:25:23 CS Repeating  process in 290 seconds
+2021-10-25 15:25:28 CS Repeating  process in 285 seconds
+2021-10-25 15:25:33 CS Repeating  process in 280 seconds
+2021-10-25 15:25:38 CS Repeating  process in 275 seconds
+2021-10-25 15:25:43 CS Repeating  process in 270 seconds
+2021-10-25 15:25:48 CS Repeating  process in 265 seconds
+2021-10-25 15:25:53 CS Repeating  process in 260 seconds
+2021-10-25 15:25:58 CS Repeating  process in 255 seconds
+2021-10-25 15:26:03 CS Repeating  process in 250 seconds
+2021-10-25 15:26:08 CS Repeating  process in 245 seconds
+2021-10-25 15:26:13 CS Repeating  process in 240 seconds
+2021-10-25 15:26:18 CS Repeating  process in 235 seconds
+2021-10-25 15:26:23 CS Repeating  process in 230 seconds
+2021-10-25 15:26:28 CS Repeating  process in 225 seconds
+2021-10-25 15:26:33 CS Repeating  process in 220 seconds
+2021-10-25 15:26:38 CS Repeating  process in 215 seconds
+2021-10-25 15:26:43 CS Repeating  process in 210 seconds
+2021-10-25 15:26:48 CS Repeating  process in 205 seconds
+2021-10-25 15:26:53 CS Repeating  process in 200 seconds
+2021-10-25 15:26:58 CS Repeating  process in 195 seconds
+2021-10-25 15:27:03 CS Repeating  process in 190 seconds
+2021-10-25 15:27:08 CS Repeating  process in 185 seconds
+2021-10-25 15:27:13 CS Repeating  process in 180 seconds
+2021-10-25 15:27:18 CS Repeating  process in 175 seconds
+2021-10-25 15:27:23 CS Repeating  process in 170 seconds
+2021-10-25 15:27:28 CS Repeating  process in 165 seconds
+2021-10-25 15:27:33 CS Repeating  process in 160 seconds
+2021-10-25 15:27:38 CS Repeating  process in 155 seconds
+2021-10-25 15:27:43 CS Repeating  process in 150 seconds
+2021-10-25 15:27:48 CS Repeating  process in 145 seconds
+2021-10-25 15:27:53 CS Repeating  process in 140 seconds
+2021-10-25 15:27:58 CS Repeating  process in 135 seconds
+2021-10-25 15:28:03 CS Repeating  process in 130 seconds
+2021-10-25 15:28:08 CS Repeating  process in 125 seconds
+2021-10-25 15:28:13 CS Repeating  process in 120 seconds
+2021-10-25 15:28:18 CS Repeating  process in 115 seconds
+2021-10-25 15:28:23 CS Repeating  process in 110 seconds
+2021-10-25 15:28:28 CS Repeating  process in 105 seconds
+2021-10-25 15:28:33 CS Repeating  process in 100 seconds
+2021-10-25 15:28:38 CS Repeating  process in 95 seconds
+2021-10-25 15:28:43 CS Repeating  process in 90 seconds
+2021-10-25 15:28:48 CS Repeating  process in 85 seconds
+2021-10-25 15:28:53 CS Repeating  process in 80 seconds
+2021-10-25 15:28:58 CS Repeating  process in 75 seconds
+2021-10-25 15:29:03 CS Repeating  process in 70 seconds
+2021-10-25 15:29:08 CS Repeating  process in 65 seconds
+2021-10-25 15:29:13 CS Repeating  process in 60 seconds
+2021-10-25 15:29:18 CS Repeating  process in 55 seconds
+2021-10-25 15:29:23 CS Repeating  process in 50 seconds
+2021-10-25 15:29:28 CS Repeating  process in 45 seconds
+2021-10-25 15:29:33 CS Repeating  process in 40 seconds
+2021-10-25 15:29:38 CS Repeating  process in 35 seconds
+2021-10-25 15:29:43 CS Repeating  process in 30 seconds
+2021-10-25 15:29:48 CS Repeating  process in 25 seconds
+2021-10-25 15:29:53 CS Repeating  process in 20 seconds
+2021-10-25 15:29:58 CS Repeating  process in 15 seconds
+2021-10-25 15:30:03 CS Repeating  process in 10 seconds
+2021-10-25 15:30:08 CS Repeating  process in 5 seconds
+2021-10-25 15:30:13 CS Repeating  process in 0 seconds
+2021-10-25 15:30:14 CS Connecting...
+2021-10-25 15:30:14 CS 25 stories pulled
+2021-10-25 15:30:15 CS 50 stories pulled
+2021-10-25 15:30:15 CS 75 stories pulled
+2021-10-25 15:30:15 CS 100 stories pulled
+2021-10-25 15:30:15 CS 125 stories pulled
+2021-10-25 15:30:16 CS 150 stories pulled
+2021-10-25 15:30:16 CS 175 stories pulled
+2021-10-25 15:30:16 CS 200 stories pulled
+2021-10-25 15:30:16 CS 225 stories pulled
+2021-10-25 15:30:16 CS Converting stories from NSML to local dict
+2021-10-25 15:30:16 CS Calculating backtimes
+2021-10-25 15:30:17 CS Converting dict to json
+2021-10-25 15:30:17 CS File same as last AWS push. Skipping upload.
+2021-10-25 15:30:21 CS Repeating  process in 295 seconds
+2021-10-25 15:30:26 CS Repeating  process in 290 seconds
+2021-10-25 15:30:31 CS Repeating  process in 285 seconds
+2021-10-25 15:30:36 CS Repeating  process in 280 seconds
+2021-10-25 15:30:41 CS Repeating  process in 275 seconds
+2021-10-25 15:30:46 CS Repeating  process in 270 seconds
+2021-10-25 15:30:51 CS Repeating  process in 265 seconds
+2021-10-25 15:30:56 CS Repeating  process in 260 seconds
+2021-10-25 15:31:01 CS Repeating  process in 255 seconds
+2021-10-25 15:31:06 CS Repeating  process in 250 seconds
+2021-10-25 15:31:11 CS Repeating  process in 245 seconds
+2021-10-25 15:31:16 CS Repeating  process in 240 seconds
+2021-10-25 15:31:21 CS Repeating  process in 235 seconds
+2021-10-25 15:31:26 CS Repeating  process in 230 seconds
+2021-10-25 15:33:03 CS Connecting...
+2021-10-25 15:33:04 CS 25 stories pulled
+2021-10-25 15:33:04 CS 50 stories pulled
+2021-10-25 15:33:04 CS 75 stories pulled
+2021-10-25 15:33:04 CS 100 stories pulled
+2021-10-25 15:33:05 CS 125 stories pulled
+2021-10-25 15:33:05 CS 150 stories pulled
+2021-10-25 15:33:05 CS 175 stories pulled
+2021-10-25 15:33:05 CS 200 stories pulled
+2021-10-25 15:33:06 CS 225 stories pulled
+2021-10-25 15:33:06 CS Converting stories from NSML to local dict
+2021-10-25 15:33:06 CS Calculating backtimes
+2021-10-25 15:33:06 CS Converting dict to json
+2021-10-25 15:33:06 CS File same as last AWS push. Skipping upload.
+2021-10-25 15:33:10 CS Repeating  process in 25 seconds
+2021-10-25 15:33:11 CS Process terminated. Closing F
+2021-10-25 15:33:18 LK Connecting...
+2021-10-25 15:33:19 LK 25 stories pulled
+2021-10-25 15:33:19 LK 50 stories pulled
+2021-10-25 15:33:19 LK 75 stories pulled
+2021-10-25 15:33:20 LK 100 stories pulled
+2021-10-25 15:33:20 LK 125 stories pulled
+2021-10-25 15:33:20 LK 150 stories pulled
+2021-10-25 15:33:20 LK 175 stories pulled
+2021-10-25 15:33:20 LK 200 stories pulled
+2021-10-25 15:33:21 LK Converting stories from NSML to local dict
+2021-10-25 15:33:40 LK Process terminated. Closing F
+2021-10-25 15:34:53 LK Connecting...
+2021-10-25 15:34:54 LK 25 stories pulled
+2021-10-25 15:34:54 LK 50 stories pulled
+2021-10-25 15:34:54 LK 75 stories pulled
+2021-10-25 15:34:54 LK 100 stories pulled
+2021-10-25 15:34:55 LK 125 stories pulled
+2021-10-25 15:34:55 LK 150 stories pulled
+2021-10-25 15:34:55 LK 175 stories pulled
+2021-10-25 15:34:55 LK 200 stories pulled
+2021-10-25 15:34:56 LK Converting stories from NSML to local dict
+2021-10-25 15:35:07 LK Process terminated. Closing F
+2021-10-25 15:36:08 CS Connecting...
+2021-10-25 15:36:09 CS 25 stories pulled
+2021-10-25 15:36:09 CS 50 stories pulled
+2021-10-25 15:36:10 CS 75 stories pulled
+2021-10-25 15:36:10 CS 100 stories pulled
+2021-10-25 15:36:10 CS 125 stories pulled
+2021-10-25 15:36:10 CS 150 stories pulled
+2021-10-25 15:36:11 CS 175 stories pulled
+2021-10-25 15:36:11 CS 200 stories pulled
+2021-10-25 15:36:11 CS 225 stories pulled
+2021-10-25 15:36:11 CS Converting stories from NSML to local dict
+2021-10-25 15:36:11 CS Calculating backtimes
+2021-10-25 15:36:11 CS Converting dict to json
+2021-10-25 15:36:11 CS File same as last AWS push. Skipping upload.
+2021-10-25 15:36:15 CS Repeating  process in 25 seconds
+2021-10-25 15:36:17 CS Process terminated. Closing F
+2021-10-25 15:36:22 LK Connecting...
+2021-10-25 15:36:22 LK 25 stories pulled
+2021-10-25 15:36:23 LK 50 stories pulled
+2021-10-25 15:36:23 LK 75 stories pulled
+2021-10-25 15:36:23 LK 100 stories pulled
+2021-10-25 15:36:23 LK 125 stories pulled
+2021-10-25 15:36:23 LK 150 stories pulled
+2021-10-25 15:36:24 LK 175 stories pulled
+2021-10-25 15:36:24 LK 200 stories pulled
+2021-10-25 15:36:24 LK Converting stories from NSML to local dict
+2021-10-25 15:36:26 LK Process terminated. Closing F
+2021-10-25 15:37:55 LK Connecting...
+2021-10-25 15:37:56 LK 25 stories pulled
+2021-10-25 15:37:56 LK 50 stories pulled
+2021-10-25 15:37:56 LK 75 stories pulled
+2021-10-25 15:37:57 LK 100 stories pulled
+2021-10-25 15:37:57 LK 125 stories pulled
+2021-10-25 15:37:57 LK 150 stories pulled
+2021-10-25 15:37:57 LK 175 stories pulled
+2021-10-25 15:37:58 LK 200 stories pulled
+2021-10-25 15:37:58 LK Converting stories from NSML to local dict
+2021-10-25 15:37:58 LK Calculating backtimes
+2021-10-25 15:37:58 LK Converting dict to json
+2021-10-25 15:37:59 LK Uploading json files to AWS
+2021-10-25 15:38:03 LK Repeating  process in 25 seconds
+2021-10-25 15:38:05 LK Process terminated. Closing F
+2021-10-25 15:39:05 LK Connecting...
+2021-10-25 15:39:05 LK 25 stories pulled
+2021-10-25 15:39:05 LK 50 stories pulled
+2021-10-25 15:39:06 LK 75 stories pulled
+2021-10-25 15:39:06 LK 100 stories pulled
+2021-10-25 15:39:06 LK 125 stories pulled
+2021-10-25 15:39:06 LK 150 stories pulled
+2021-10-25 15:39:50 LK  iNews error, see terminal for info
+2021-10-25 15:40:05 LK Connecting...
+2021-10-25 15:40:05 LK 25 stories pulled
+2021-10-25 15:40:05 LK 50 stories pulled
+2021-10-25 15:40:05 LK 75 stories pulled
+2021-10-25 15:40:06 LK 100 stories pulled
+2021-10-25 15:40:06 LK 125 stories pulled
+2021-10-25 15:40:06 LK 150 stories pulled
+2021-10-25 15:40:06 LK 175 stories pulled
+2021-10-25 15:40:07 LK 200 stories pulled
+2021-10-25 15:40:07 LK Converting stories from NSML to local dict
+2021-10-25 15:40:07 LK Calculating backtimes
+2021-10-25 15:40:07 LK Converting dict to json
+2021-10-25 15:40:08 LK Uploading json files to AWS
+2021-10-25 15:40:12 LK Repeating  process in 25 seconds
+2021-10-25 15:40:17 LK Repeating  process in 20 seconds
+2021-10-25 15:40:22 LK Process terminated. Closing F
