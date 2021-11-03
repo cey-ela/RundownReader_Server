@@ -1,32 +1,15 @@
 import smtplib
-import json
 
 
-def email_error_notification(source):
-    with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as creds:
-        email_dets = json.load(creds)
-        sender_email_address = email_dets[2]['email']
-        send_email_passwd = email_dets[2]['passwd']
+def email_error_notification():
 
-    try:
-        # Create your SMTP session
-        smtp = smtplib.SMTP('smtp.gmail.com', 587)
+    sender_email = 'cts.itv@gmail.com'
+    receiver_email = 'joeedwards88@gmail.com'
+    password = "vphdzubvjwpjyido"
+    message = f'Subject: RR SERVER ERROR! \n\n RR Server experienced error, please investigate'
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(sender_email, password)
+    server.sendmail(sender_email, receiver_email, message)
+    print('email sent')
 
-        # Use TLS to add security
-        smtp.starttls()
-
-        # User Authentication
-        smtp.login(sender_email_address, send_email_passwd)
-
-        # Defining The Message
-        body = source + ' CONSOLE IS NOT UPDATING RUNDOWN READER. INVESTIGATE IMMEDIATELY.'
-
-        # Sending the Email
-        smtp.sendmail("joeedwards88@gmail.com", "joeedwards88@gmail.com", body)
-
-        # Terminating the session
-        smtp.quit()
-        print("Email sent successfully!")
-
-    except Exception as ex:
-        print("Something went wrong....", ex)

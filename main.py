@@ -12,6 +12,7 @@ import re
 from kivy.uix.textinput import TextInput
 import json
 from kivy import properties as kp
+from email_notification import email_error_notification
 
 
 class ConsoleApp(MDApp):
@@ -31,8 +32,8 @@ class ConsoleApp(MDApp):
     def __init__(self):
         super().__init__()
         #x Retrieve iNews FTP credentials and IP from secure external source
-        #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
+        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
         self.ip = inews_details[1]['ip']
         self.passwd = inews_details[1]['passwd']
@@ -73,6 +74,7 @@ class ConsoleApp(MDApp):
             if 'auto' in prod:
                 for input_box in self.root.ids[prod].ids:
                     self.root.ids[prod].ids[input_box].text = self.schedule[prod[-2:]][input_box]
+
 
     def update_schedule(self):
         """
@@ -118,9 +120,6 @@ class ConsoleApp(MDApp):
             del self.ftp_sessions[prod]
             print(str(self.ftp_sessions))
             self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn.")
-
-
-
 
     def rundown_switch(self, switch, rundown, local_dir, export_path, color):
         """
@@ -215,6 +214,7 @@ class ConsoleApp(MDApp):
             duration = self.determine_frequency(local_dir[8:10])
             self.console_log(local_dir[8:], color + "Uploading json files to AWS[/color]")
             self.countdown(duration, rundown, local_dir, export_path, color)
+
 
     def countdown(self, duration, rundown, local_dir, export_path, color):
         """

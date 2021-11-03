@@ -8,6 +8,7 @@ import time
 import ftplib as ftp
 from func_timeout import func_timeout, FunctionTimedOut
 from kivy.clock import Clock
+from email_notification import email_error_notification
 
 
 class InewsPullSortPush:
@@ -34,6 +35,7 @@ class InewsPullSortPush:
 
         except ftp.error_reply as e:  # If the process times out during the RETR pull, you may see this error
             # on its next retry. Simply rerunning will not work. Exit FTP connection and reestablish
+            email_error_notification()
             self.app.inews_disconnect(local_dir, export_path, color)
             print(str(e) + str(datetime.datetime.now()) + ' waiting 15 seconds until retry')
             self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
@@ -41,9 +43,11 @@ class InewsPullSortPush:
             self.app.inews_connect(local_dir, export_path, color)
 
         except FileNotFoundError:  # Rundown is empty, early exit/return back to main countdown/repeat
+            print('RUNDOWN EMPTY')
             return
 
         except (FunctionTimedOut, TimeoutError, OSError) as e:
+            email_error_notification()
             self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
             print('iNews error @ ' + str(datetime.datetime.now()) + ':\n' + str(e))
             self.error_count += 1
@@ -52,7 +56,9 @@ class InewsPullSortPush:
                 time.sleep(15)
                 return self.init_process(inews_path, local_dir, export_path, color)
             else:  # If error cap is reached. Gracefully shut down.
-                self.app.console_log(export_path, color + 'Error limit reached. Processes stopped. See terminal[/color]')
+
+                self.app.console_log(export_path,
+                                     color + 'Error limit reached. Processes stopped. See terminal[/color]')
                 print('Error cap of 5 has been exceeded. Shutting down. \n'
                       'Please investigate and restart software when ready.')
                 for sesh in self.app.ftp_sessions.values():
@@ -61,23 +67,22 @@ class InewsPullSortPush:
                     self.app.repeat_switches[switch] = False
 
         if self.error_count < self.error_limit:
-            self.convert_xml_to_dict(local_dir)
-            self.app.console_log(export_path, color + "Converting stories from NSML to local dict[/color]")
+            try:  # If error exerienced on ull, this may fuck uk. Return to countdown hoefully
+                self.convert_xml_to_dict(local_dir)
+            except FileNotFoundError:
+                return
 
+            self.app.console_log(export_path, color + "Converting stories from NSML to local dict[/color]")
 
             self.set_backtimes()
             self.app.console_log(export_path, color + "Calculating backtimes[/color]")
 
-
             self.finishing_touches()
-
 
             self.create_pv_version(export_path)
 
-
             self.create_json_files(export_path)
             self.app.console_log(export_path, color + "Converting dict to json[/color]")
-
 
     def pull_xml_via_ftp(self, inews_path, local_dir, export_path, color):
         # Start by making sure the target working folder is completely empty. If process previously exited early there
@@ -93,15 +98,14 @@ class InewsPullSortPush:
 
         ftp_sesh.cwd(inews_path)
 
+        # try:  # this happen because of 'ftplib.error_reply: 200 TYPE A command successful.
+        #     # think this is from reusing old FTP conns
+        #     # Store story ID as list of titles. E.g. '5AE4RT2'
+        self.story_ids = ftp_sesh.nlst()
+        # except ftp.error_reply as e:
+        #     print(e)
 
-        try:  # this happen because of 'ftplib.error_reply: 200 TYPE A command successful.
-            # think this is from reusing old FTP conns
-            # Store story ID as list of titles. E.g. '5AE4RT2'
-            self.story_ids = ftp_sesh.nlst()
-        except ftp.error_reply as e:
-            print(e)
-
-        if not self.story_ids:
+        if not self.story_ids:  # If rundown empty
             raise FileNotFoundError
 
         # Cycles through each line/Story ID and opens as a new file
@@ -243,12 +247,10 @@ class InewsPullSortPush:
                         # Else write key and value as they are
                         story_dict[key] = value
 
-
                 if not break_out_flag:
                     # Append story_dict to 'data' list
                     # 1631780753
                     # 1631704369
-
 
                     self.data.append(story_dict)
                     # try:
@@ -353,7 +355,6 @@ class InewsPullSortPush:
 
             # print(d['page'], d['title'], str(datetime.timedelta(seconds=d['seconds'])))
 
-
     def finishing_touches(self):
         # Rundowns are divided into sections, aka items, defined by the dict['page'] parameter. Scrollview utilises
         # these breaks to skip through each 'item'. The position of each item is set here. Some manipulation of pos
@@ -387,9 +388,18 @@ class InewsPullSortPush:
             except KeyError as e:
                 print('key error: ' + str(e))
 
-
-
-
+        for r in range(12):
+            self.data.append({
+                "camera": "BYEBYE",
+                "format": "CYA",
+                "page": "9999",
+                "story_id": "over",
+                "seconds": 0,
+                "backtime": '23:30:00',
+                "total":"0",
+                "focus": False,
+                "title": "another ones bites the dust"
+            }, )
 
     def create_pv_version(self, export_path):
         slices = [0]
@@ -405,7 +415,6 @@ class InewsPullSortPush:
             except KeyError as e:
                 print('key error: ' + str(e))
 
-
         # Using the current and next index from slice, attempt to store chunks
         # of self.data in new_dicts
         for a, b in zip(slices, slices[1:] + [slices[0]]):
@@ -414,10 +423,6 @@ class InewsPullSortPush:
         if not self.data_pv[-1]:
             self.data_pv.pop()
 
-
-
-
-
     def create_json_files(self, export_path):
         """...Export..."""
         with open('exports/sv/' + export_path + '.json', 'w') as outfile:
@@ -425,10 +430,6 @@ class InewsPullSortPush:
 
         with open('exports/pv/' + export_path + '.json', 'w') as outfile:
             outfile.write(json.dumps(self.data_pv, indent=4))
-
-
-
-
 
 # inews = InewsPullSortSave()
 
@@ -443,5 +444,3 @@ class InewsPullSortPush:
 # inews.set_backtimes()
 # inews.finishing_touches()
 # inews.convert_to_json("lw/lw_mon")
-
-
