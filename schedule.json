@@ -52,8 +52,8 @@
         "finish_three": "13:30",
         "freq_three": "30",
         "start_four": "13:30",
-        "finish_four": "14:00",
-        "freq_four": "60"
+        "finish_four": "18:00",
+        "freq_four": "16"
     },
     "cs": {
         "start_one": "07:00",

@@ -1,6 +1,8 @@
 from kivy.config import Config
-Config.set('graphics', 'width', '900')
-Config.set('graphics', 'height', '900')
+Config.set('graphics', 'width', '900')  # These have to be unconventionally set before other imports
+Config.set('graphics', 'height', '600')
+Config.set('graphics', 'minimum_width', '900')
+Config.set('graphics', 'minimum_height', '600')
 from threading import Thread
 from kivymd.app import MDApp
 from kivy.clock import Clock
@@ -12,7 +14,6 @@ import re
 from kivy.uix.textinput import TextInput
 import json
 from kivy import properties as kp
-from email_notification import email_error_notification
 
 
 class ConsoleApp(MDApp):
@@ -32,12 +33,14 @@ class ConsoleApp(MDApp):
     def __init__(self):
         super().__init__()
         #x Retrieve iNews FTP credentials and IP from secure external source
-        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
+        #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
         self.ip = inews_details[1]['ip']
         self.passwd = inews_details[1]['passwd']
         self.user = inews_details[1]['user']
+
+        self.dow = datetime.today().strftime('%a').lower()
 
         # interrogated when the countdown ends to see if the process should repeat
         self.repeat_switches = {'gb': False,
@@ -59,22 +62,22 @@ class ConsoleApp(MDApp):
         with open('log.txt', 'r') as f_in:
             data = f_in.read().splitlines(True)
         with open('log.txt', 'w') as f_out:
-            f_out.writelines(data[-2000:])
+            f_out.writelines(data[-3000:])
 
     def build(self):
         """
         Called as the .kv elements are being constructed, post init()
         """
-        self.title = 'NEW SERVER'
+        self.title = 'RUNDOWN_READER_SERVER'
         InewsPullSortPush.app = self  # how alternate .py files communicate back to the main App class
 
         # Populate each automation schedule input box. The boxes follow the same layout as schedule.json so both
         # can be 'zipped' through concurrently, correctly transferring data between the two locations
-        for prod in self.root.ids:
-            if 'auto' in prod:
-                for input_box in self.root.ids[prod].ids:
-                    self.root.ids[prod].ids[input_box].text = self.schedule[prod[-2:]][input_box]
 
+        # for prod in self.root.ids.settings_screen.ids:
+        #     if 'auto' in prod:
+        #         for input_box in prod:
+        #             input_box.text = self.schedule[prod[-2:]][input_box]
 
     def update_schedule(self):
         """
@@ -89,36 +92,48 @@ class ConsoleApp(MDApp):
             f.write(json.dumps(self.schedule, indent=4))
 
 
+    def automate(self, activity, prod):
+        # self.dow = datetime.today().strftime('%a').lower()
+        # 1. Move switches according to day, Start process X
+        # 1.5 Update automation_switches. X
+        # 2. Loop and check schedule
+        # 3. Have it check day, change at midnight
+        try:
+            self.root.ids.main_screen.ids[prod + self.dow + '_switch'].active = activity
+        except KeyError:
+            print('its the weekend yall')
+
     def inews_connect(self, local_dir, export_path, color):
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
 
         try:  # If session exists, quit
             self.ftp_sessions[prod].quit()
-            print('Closing connection: ' + str(self.ftp_sessions[prod]))
+            print(str(datetime.now()) + 'Closing connection: ' + str(self.ftp_sessions[prod]))
         except (KeyError, AttributeError):
             pass  # Key doesn't exist before first run-through
 
         try:
             self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
             self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
-            print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
+            print(str(datetime.now())[:19] + ' ~ Opening new FTP connection for ' + prod.upper() + ': ' +
+                  str(self.ftp_sessions[prod]))
         except OSError:  # Handles network disconnect error
-            print('Network is unreachable. Check internet connection')
+            print(str(datetime.now()) + 'Network is unreachable. Check internet connection')
             return self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
 
 
     def inews_disconnect(self, local_dir, export_path, color):
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
 
-        if prod == 'al':
+        if prod == 'l':  # if 'kill' command sent
             for sesh in self.ftp_sessions.values():
                 sesh.quit()
                 print(str(sesh) + ': connection has been closed')
         else:
             self.ftp_sessions[prod].quit()
-            print('Closing FTP connection: ' + str(self.ftp_sessions[prod]) + 'Conns remaining open:')
+            print(str(datetime.now())[:19] + ' ~ Closing FTP connection for ' + prod.upper() + ': ' +
+                  str(self.ftp_sessions[prod]))
             del self.ftp_sessions[prod]
-            print(str(self.ftp_sessions))
             self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn.")
 
     def rundown_switch(self, switch, rundown, local_dir, export_path, color):
@@ -138,30 +153,12 @@ class ConsoleApp(MDApp):
         self.repeat_switches[prod] = switch  # Update dict used at the end of the countdown repeat - yes/no
 
         if switch:  # If value from the switch being toggled is True/active/on
-            # try:  # If session exists, quit
-            #     self.ftp_sessions[prod].quit()
-            #     print('Closing connection: ' + str(self.ftp_sessions[prod]))
-            # except (KeyError, AttributeError):
-            #     pass  # Key doesn't exist before first run-through
-            # try:
-            #     self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
-            #     self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
-            #     print('Opening new FTP connection: ' + str(self.ftp_sessions[prod]))
-            # except OSError:  # Handles network disconnect error
-            #     print('Network is unreachable. Check internet connection')
-            #     self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
-            #     return
             self.inews_connect(local_dir, export_path, color)
-
             self.collect_rundown_thread(rundown, local_dir, export_path, color)  # Begin next step on new thread
 
         else:  # If switch is turned off. Close FTP conn gracefully and remove it from the ftp_sessions dict
-            # print('Closing FTP connection: ' + str(self.ftp_sessions[prod]))
-            # self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn. Conns remaining open:")
-            # self.ftp_sessions[prod].quit()
-            # del self.ftp_sessions[prod]
-            # self.console_log(local_dir[8:], str(self.ftp_sessions))
             self.inews_disconnect(local_dir, export_path, color)
+            self.root.ids.main_screen.ids[prod + '_auto_switch'].active = False
 
     def collect_rundown_thread(self, rundown, local_dir, export_path, color):
         """
@@ -193,9 +190,7 @@ class ConsoleApp(MDApp):
         if last_export == new_export:  # If they match, proceed to countdown
             self.console_log(local_dir[8:], color + "File same as last AWS push. Skipping upload.[/color]")
             self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
-        # elif not new_export:  # if the file == []
-        #     self.console_log(local_dir[8:], color + "New export empty. Skipping upload.[/color]")
-        #     self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
+
         else:  # Otherwise proceed to AWS upload via new Thread
             t = Thread(target=self.push_to_aws, args=(rundown, local_dir, export_path, color))
             t.daemon = False
@@ -214,22 +209,6 @@ class ConsoleApp(MDApp):
             duration = self.determine_frequency(local_dir[8:10])
             self.console_log(local_dir[8:], color + "Uploading json files to AWS[/color]")
             self.countdown(duration, rundown, local_dir, export_path, color)
-
-
-    def countdown(self, duration, rundown, local_dir, export_path, color):
-        """
-        The last function in the sequence. Using the duration parameter countdown once a second using schedule_once(1)
-        When duration == 0 and if the switch has remained on, repeat the entire process
-        :param duration: time remaining
-        """
-        if duration == 0 and self.repeat_switches[export_path[3:5]]:
-            return self.collect_rundown_thread(rundown, local_dir, export_path, color)
-
-        duration -= 1
-        if self.repeat_switches[export_path[3:5]]:  # If start switch hasn't been deactivated
-            Clock.schedule_once(lambda dt: self.countdown(duration, rundown, local_dir, export_path, color), 1)
-            if duration % 5 == 0:  # Update console every 5 seconds
-                self.console_log(local_dir[8:], color + "Repeating  process in " + str(duration) + " seconds[/color]")
 
     def determine_frequency(self, filename):
         """
@@ -261,8 +240,47 @@ class ConsoleApp(MDApp):
             return 3651  # If current actual time fail to fall within any schedules then set default freq to 1 hour
 
         else:
-            # If automate switch is off, use the value from left-hand-side frequency box
-            return int(self.root.ids['repeat_in_seconds_' + filename].text)
+            # If automate switch is off, return default
+            return 30  # move this to options eventually
+
+    def countdown(self, duration, rundown, local_dir, export_path, color):
+        """
+        The last function in the sequence. Using the duration parameter countdown once a second using schedule_once(1)
+        When duration == 0 and if the switch has remained on, repeat the entire process
+        :param duration: time remaining
+        """
+        prod = export_path[3:5]
+
+        if duration == 0 and self.repeat_switches[prod]:
+            return self.check_dow_and_proceed(rundown, local_dir, export_path, color)
+            # return self.collect_rundown_thread(rundown, local_dir, export_path, color)
+
+        duration -= 1
+        if self.repeat_switches[prod]:  # If start switch hasn't been deactivated
+            Clock.schedule_once(lambda dt: self.countdown(duration, rundown, local_dir, export_path, color), 1)
+            if duration % 5 == 0:  # Update console every 5 seconds
+                self.console_log(local_dir[8:], color + "Repeating  process in " + str(duration) + " seconds[/color]")
+
+    def check_dow_and_proceed(self, rundown, local_dir, export_path, color):
+        """
+        Once the countdown has ended, and jsut before repeating the process, check to see if the Day Of the Week has
+        changed since the last run-through.
+        :param current_dow: get dow in shortend string, e.g. 'mon', 'thu'
+        """
+        prod = export_path[3:5]
+        current_dow = datetime.today().strftime('%a').lower()
+
+        if prod == 'lk':  # LK doesn't adhere to DOW rules, break out early
+            return self.collect_rundown_thread(rundown, local_dir, export_path, color)
+
+        if self.dow == current_dow:  # If the day has not changed since the last pull, repeat as normal
+            return self.collect_rundown_thread(rundown, local_dir, export_path, color)
+        else:  # If the hour has passed midnight and entered a new day since the last pull
+            self.root.ids.main_screen.ids[prod + '_' + self.dow + '_switch'].active = False  # Turn off yesterday switch
+            self.dow = current_dow  # Update Day Of Week
+            self.root.ids.main_screen.ids[prod + '_auto_switch'].active = True  # Re-trigger the auto switch to proceed
+
+
 
     def console_log(self, filename, text):
         """
@@ -284,15 +302,14 @@ class ConsoleApp(MDApp):
         for i in log:  # build output
             message += i + '\n'
 
-        self.root.ids['console_' + filename[:2]].text = message  # update console
+        self.root.ids.main_screen.ids['console_' + filename[:2]].text = message  # update console
 
     def on_stop(self):
         """
         Run when the app is closed gracefully
         """
-        self.inews_disconnect('local_dir', 'endall', '0123456')
+        self.inews_disconnect('local_dir', 'kill', '0123456')
         print('cya')
-
 
 
 class AutoTI(TextInput):
