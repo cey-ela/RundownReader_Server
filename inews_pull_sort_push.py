@@ -33,12 +33,18 @@ class InewsPullSortPush:
         the repeat countdown reaches 0. It is permitted n(error_limit) connection timeouts or other errors before
         shutting down all connections as a matter of safety. Email notifications will be sent"""
 
-        self.app.console_log(export_path, color + 'Connecting...[/color]')
+        self.app.console_log(export_path, color + 'Starting rundown download[/color]')
+
 
         # 1ST METHOD: Retrieve XML data from iNews via FTP
         try:  # Kick off the iNews data pull via a special func_timeout method: If n seconds are exceeded
             # FunctionTimedOut exception is raised
             func_timeout(45, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
+
+        except FileNotFoundError:  # Rundown is empty, early exit/return back to main countdown/repeat
+            print(str(datetime.datetime.now()) + 'Rundown empty - Skipping AWS push')
+            self.app.console_log(export_path, color + 'Rundown empty. No upload[/color]')
+            return
 
         except (FunctionTimedOut, TimeoutError, OSError) as e:
             # Broad range of Timeout Errors to catch conn issues
@@ -63,8 +69,8 @@ class InewsPullSortPush:
                       'Please investigate and restart software when ready.')
                 for sesh in self.app.ftp_sessions.values():
                     sesh.quit()
-                for switch in self.app.repeat_switches:
-                    self.app.repeat_switches[switch] = False
+                for switch in self.app.manual_switches:
+                    self.app.manual_switches[switch] = False
 
                 return  # return to repeat countdown. It will safely fail on repeat as FTP conns are closed
 
@@ -77,9 +83,7 @@ class InewsPullSortPush:
         #     time.sleep(15)
         #     self.app.inews_connect(local_dir, export_path, color)
 
-        except FileNotFoundError:  # Rundown is empty, early exit/return back to main countdown/repeat
-            print('Rundown empty - Skipping AWS push')
-            return
+
 
         if self.error_count < self.error_limit:
 
@@ -87,7 +91,7 @@ class InewsPullSortPush:
             try:  # If timeout error is encountered, depending on the precise time the proceeding method, convert_xml...
                 # may be called without any data to work with. This catches that and returns back to repeat countdown
                 self.convert_xml_to_dict(local_dir)
-                self.app.console_log(export_path, color + "Converting stories from NSML to local dict[/color]")
+                self.app.console_log(export_path, color + "Converting from NSML to dict[/color]")
             except FileNotFoundError:
                 return
 
@@ -126,15 +130,16 @@ class InewsPullSortPush:
             try:
                 with open(local_dir + story_id_title, "wb") as new_story_file:
                     ftp_sesh.retrbinary("RETR " + story_id_title, new_story_file.write)
+                    # new_story_file.close()
 
-            except (ftp.error_perm,EOFError, AttributeError):  # Permanent error - all actions will have to cease and the ftp conn reestablished
-                new_story_file.close()  # Reason? Connection messes up, raises vague but final error_perm exception
+            except (ftp.error_perm,EOFError, AttributeError):  # Permanent error - all actions will have to cease and
+                # the ftp conn reestablished. Raises vague but final error_perm exception
+                # new_story_file.close()
                 continue
 
-            new_story_file.close()
             counter += 1
-            if counter % 25 == 0:
-                self.app.console_log(export_path, color + str(counter) + ' stories pulled[/color]')
+            # if counter % 25 == 0:
+            self.app.console_log(export_path, color + str(counter) + ' stories pulled[/color]')
 
     def convert_xml_to_dict(self, local_dir):
         # TODO: NOTE - focus, brk, and floated default false values removed, try and work App without these
@@ -347,14 +352,14 @@ class InewsPullSortPush:
                     # Append story_dict to 'data' list
                     self.data.append(story_dict)
 
-                # Close story file
-                story_file.close()
+                # # Close story file
+                # story_file.close()
 
-                # 8) Deletes the file we just read as it's no longer needed
-                try:
-                    os.remove(local_dir + story_id_title)
-                except PermissionError as e:
-                    print(e)
+            # 8) Deletes the file we just read as it's no longer needed
+            try:
+                os.remove(local_dir + story_id_title)
+            except PermissionError as e:
+                print(str(datetime.datetime.now()), str(e))
 
     def set_backtimes(self):
         """
@@ -479,15 +484,15 @@ class InewsPullSortPush:
 
         for r in range(12):
             self.data.append({
-                "camera": "BYEBYE",
-                "format": "CYA",
+                "camera": "byebye",
+                "format": "cya",
                 "page": "9999",
                 "story_id": "over",
                 "seconds": 0,
                 "backtime": '23:30:00',
                 "total":"0",
                 "focus": False,
-                "title": "another ones bites the dust"
+                "title": " ~ end of show ~ "
             }, )
 
     def create_pv_version(self, export_path):

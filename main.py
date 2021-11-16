@@ -1,8 +1,9 @@
 from kivy.config import Config
-Config.set('graphics', 'width', '900')  # These have to be unconventionally set before other imports
-Config.set('graphics', 'height', '600')
-Config.set('graphics', 'minimum_width', '900')
-Config.set('graphics', 'minimum_height', '600')
+Config.set('graphics', 'width', '1200')  # These have to be unconventionally set before other imports
+Config.set('graphics', 'height', '800')
+Config.set('graphics', 'minimum_width', '1200')
+Config.set('graphics', 'minimum_height', '800')
+import os
 from threading import Thread
 from kivymd.app import MDApp
 from kivy.clock import Clock
@@ -33,17 +34,19 @@ class ConsoleApp(MDApp):
     def __init__(self):
         super().__init__()
         #x Retrieve iNews FTP credentials and IP from secure external source
-        #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
+        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
         self.ip = inews_details[1]['ip']
         self.passwd = inews_details[1]['passwd']
         self.user = inews_details[1]['user']
 
-        self.dow = datetime.today().strftime('%a').lower()
+        self.dow = datetime.today().strftime('%a').lower()  # Set Day Of the Week to be used by automation day switching
+
+        Clock.schedule_interval(self.activity_monitor, 60)
 
         # interrogated when the countdown ends to see if the process should repeat
-        self.repeat_switches = {'gb': False,
+        self.manual_switches = {'gb': False,
                                 'lk': False,
                                 'tm': False,
                                 'lw': False,
@@ -64,11 +67,17 @@ class ConsoleApp(MDApp):
         with open('log.txt', 'w') as f_out:
             f_out.writelines(data[-3000:])
 
+        # Empty \stories subdirectories of any remnant downloads
+        for parent, dirnames, filenames in \
+                os.walk("C:\\Users\\Avid.MSTRO-SPR-WW\\PycharmProjects\\RRS_New\\RundownReader_Server_NEW\\stories"):
+            for fn in filenames:
+                os.remove(os.path.join(parent, fn))
+
     def build(self):
         """
         Called as the .kv elements are being constructed, post init()
         """
-        self.title = 'RUNDOWN_READER_SERVER'
+        self.title = 'RRS'
         InewsPullSortPush.app = self  # how alternate .py files communicate back to the main App class
 
         # Populate each automation schedule input box. The boxes follow the same layout as schedule.json so both
@@ -78,6 +87,31 @@ class ConsoleApp(MDApp):
         #     if 'auto' in prod:
         #         for input_box in prod:
         #             input_box.text = self.schedule[prod[-2:]][input_box]
+
+    def activity_monitor(self, dt=None):
+        """
+        An extra safety net frequently checking the log to make sure that if a switch is on, it is updating the log
+        regularly. If there is a freeze in any process the log will stop updating and this process will trigger an
+        email alert
+        Loop through dict of active sessions, if on and True compare the last logged minute against the current minute,
+        calculate the difference between the two and if greater than 1 minute send warning email
+        """
+        current_minute = int(str(datetime.now())[14:16])
+
+        for prod, bool in self.manual_switches.items():
+            if bool:
+                log = getattr(self, prod + '_log')
+                last_log_minute = int(log[-1][3:5])
+                difference = current_minute - last_log_minute
+
+                print('last: ' + str(last_log_minute))
+                print('current: ' + str(current_minute))
+                print('difference: ' + str(difference))
+
+                if difference not in [0, 1, -59]:  # -59 in list of acceptable differences because top of the hour minus
+                    # the previous minute of 59 = -59
+                    print('!!!!!!????? HAS A PROCESS FROZEN????!!!!!')
+                    # if this works send different tier email
 
     def update_schedule(self):
         """
@@ -115,6 +149,7 @@ class ConsoleApp(MDApp):
         try:
             self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
             self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
+            self.console_log(local_dir[8:], color + "Opening new FTP connection.[/color]")
             print(str(datetime.now())[:19] + ' ~ Opening new FTP connection for ' + prod.upper() + ': ' +
                   str(self.ftp_sessions[prod]))
         except OSError:  # Handles network disconnect error
@@ -134,7 +169,7 @@ class ConsoleApp(MDApp):
             print(str(datetime.now())[:19] + ' ~ Closing FTP connection for ' + prod.upper() + ': ' +
                   str(self.ftp_sessions[prod]))
             del self.ftp_sessions[prod]
-            self.console_log(local_dir[8:], color + "Process terminated. Closing FTP conn.")
+            self.console_log(local_dir[8:], color + "Terminated. Closing FTP conn.")
 
     def rundown_switch(self, switch, rundown, local_dir, export_path, color):
         """
@@ -150,7 +185,7 @@ class ConsoleApp(MDApp):
         :param color: used to color output console text correctly
         """
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
-        self.repeat_switches[prod] = switch  # Update dict used at the end of the countdown repeat - yes/no
+        self.manual_switches[prod] = switch  # Update dict used at the end of the countdown repeat - yes/no
 
         if switch:  # If value from the switch being toggled is True/active/on
             self.inews_connect(local_dir, export_path, color)
@@ -164,7 +199,7 @@ class ConsoleApp(MDApp):
         """
             Threads are used in Kivy to prevent graphical locking of the interface
         """
-        if self.repeat_switches[export_path[3:5]]:
+        if self.manual_switches[export_path[3:5]]:
             t = Thread(target=self.collect_rundown, args=(rundown, local_dir, export_path, color))
             t.daemon = True
             t.start()
@@ -187,8 +222,8 @@ class ConsoleApp(MDApp):
         with open('exports/sv/' + export_path + '.json') as file:
             new_export = json.load(file)  #...against the new file
 
-        if last_export == new_export:  # If they match, proceed to countdown
-            self.console_log(local_dir[8:], color + "File same as last AWS push. Skipping upload.[/color]")
+        if last_export == new_export:  # If they match, skip AWS and proceed to countdown
+            self.console_log(local_dir[8:], color + "File identical. No upload.[/color]")
             self.countdown(self.determine_frequency(local_dir[8:10]), rundown, local_dir, export_path, color)
 
         else:  # Otherwise proceed to AWS upload via new Thread
@@ -201,7 +236,7 @@ class ConsoleApp(MDApp):
         Once new pv/sv export files have been created, push to AWS (see s3_connection.py)
         establish how long the next countdown() should take and run it
         """
-        if self.repeat_switches[export_path[3:5]]:
+        if self.manual_switches[export_path[3:5]]:
 
             upload_to_aws('exports/pv/' + export_path + '.json', 'rundowns', 'pv/' + export_path)
             upload_to_aws('exports/sv/' + export_path + '.json', 'rundowns', 'sv/' + export_path)
@@ -251,15 +286,15 @@ class ConsoleApp(MDApp):
         """
         prod = export_path[3:5]
 
-        if duration == 0 and self.repeat_switches[prod]:
+        if duration == 0 and self.manual_switches[prod]:
             return self.check_dow_and_proceed(rundown, local_dir, export_path, color)
             # return self.collect_rundown_thread(rundown, local_dir, export_path, color)
 
         duration -= 1
-        if self.repeat_switches[prod]:  # If start switch hasn't been deactivated
+        if self.manual_switches[prod]:  # If start switch hasn't been deactivated
             Clock.schedule_once(lambda dt: self.countdown(duration, rundown, local_dir, export_path, color), 1)
-            if duration % 5 == 0:  # Update console every 5 seconds
-                self.console_log(local_dir[8:], color + "Repeating  process in " + str(duration) + " seconds[/color]")
+            # Update console every second
+            self.console_log(local_dir[8:], color + "Repeating  process in " + str(duration) + "[/color]")
 
     def check_dow_and_proceed(self, rundown, local_dir, export_path, color):
         """
@@ -290,13 +325,22 @@ class ConsoleApp(MDApp):
         """
         message = ''  # create var
 
+        time = str(datetime.now())[11:19]
         log = getattr(self, filename[:2] + '_log')  # define log/list to update
 
-        log.append(text)  # add text received as argument
+        # Refine the log to not repeat countdown lines, replace the last one instead
+        if 'pulled' in text or 'Repeating' in text:
+            if 'download' not in log[-1] and 'identical' not in log[-1] and 'empty' not in log[-1]:
+                log.pop(-1)
+
+        log.append(str(time) + ': ' + text)  # add text and time stamp to log
         with open("log.txt", "a") as logfile:
             logfile.write(str(datetime.now())[:-7] + ' ' + filename[:2].upper() + ' ' + text[17:-8] + '\n')
 
-        if len(log) > 11:  # keep the log fewer than 11 rows
+        # Calculate how many lines should be displayed dependant on the height of the console window
+        console_height = (self.root.ids.main_screen.ids['console_' + filename[:2]].height / 20)
+
+        if len(log) > console_height:  # keep the log fewer than n rows
             log.pop(0)
 
         for i in log:  # build output

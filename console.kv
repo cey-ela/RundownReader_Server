@@ -23,11 +23,10 @@ ScreenManager:
                 source: 'assets/bg.png'
 
 
-        AnchorLayout
-            anchor_x: 'right'
-            anchor_y: 'center'
+        MDBoxLayout
             size_hint_y: None
-            height: 200
+            height: 100
+
             canvas.before:
                 Color:
                     rgba: 0,0,0,1
@@ -39,31 +38,35 @@ ScreenManager:
                 Line:
                     width: 5
                     rectangle: self.x, self.y, self.width, self.height
-                Rectangle:
-                    pos: self.x + 12, self.y + 12
-                    size: 175, 175
-                    source: 'assets/icon.png'
-                Rectangle:
-                    pos: self.x + 250, self.y + 40
-                    size: 1310, 131
-                    source: 'assets/title.png'
+            Widget
+                canvas.before:
+                    Rectangle:
+                        size: 80, 80
+                        pos: self.x + 12, self.y + 12
+                        source: 'assets/icon.png'
+
+            Widget
+                size_hint_x: .1
+
+            Widget
+                canvas.before:
+                    Rectangle:
+                        size: 800, 80
+                        pos: (self.center_x / 4), self.y + 10
+                        source: 'assets/title.png'
+
+
+
 
             MDIconButton
                 theme_text_color: 'Custom'
                 icon: 'cog-outline'
                 text_color: 0, 1, 0
-                user_font_size: 65
+                user_font_size: 32.5
+                pos_hint: {"center_x": .5, "center_y": .5}
                 size_hint_x: None
-                width: 100
+                width: 50
                 on_press: app.dow = 'tue'
-#            MDIconButton
-#                theme_text_color: 'Custom'
-#                icon: 'information-variant'
-#
-#                text_color: .9, .9, .9
-#                user_font_size: 65
-#                size_hint_x: None
-#                width: 100
 
 
 
@@ -169,13 +172,12 @@ ScreenManager:
                                 size_hint_x: .4
 
                 # Bottom box - Console
+
                 Spacer
                 ConsoleWindow
                     id: console_gb
-
-
-
                 Spacer
+
             # 2nd pane - LK Box
             MDBoxLayout
                 orientation: 'vertical'
@@ -235,7 +237,7 @@ ScreenManager:
                             MDSwitch:
                                 id: lk_tx_switch
                                 on_active: app.automation_switches['lk'] = self.active
-                                on_active: app.rundown_switch(self.active, "*GMB-LK.*LK.TX.LORRAINE", "stories/lk/tx/", "lk/lk_tx", '   [color=00ff00]')
+                                on_active: app.rundown_switch(self.active, "*GMB-LK.*LK.TX.LORRAINE", "stories/lk/tx/", "lk/lk_tx", '[color=00ff00]')
                             Widget
                                 size_hint_x: .4
 
@@ -249,6 +251,7 @@ ScreenManager:
                 Spacer
                 ConsoleWindow
                     id: console_lk
+                Spacer
 
             # 3rd pane- TM
             MDBoxLayout
@@ -353,6 +356,7 @@ ScreenManager:
                 Spacer
                 ConsoleWindow
                     id: console_tm
+                Spacer
 
             # 4th pane
             MDBoxLayout
@@ -403,7 +407,7 @@ ScreenManager:
                                 text_color: 1, 0.941, 0
                             MDSwitch:
                                 id: lw_mon_switch
-                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.MONDAY", "stories/lw/mon/", "lw/lw_mon", '   [color=ffff00]')
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.MONDAY", "stories/lw/mon/", "lw/lw_mon", '[color=ffff00]')
                             Widget
                                 size_hint_x: .4
 
@@ -416,7 +420,7 @@ ScreenManager:
                                 text_color: 1, 0.372, 0.121
                             MDSwitch:
                                 id: lw_tue_switch
-                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.TUESDAY", "stories/lw/tue/", "lw/lw_tue", '   [color=ff5f1f]')
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.TUESDAY", "stories/lw/tue/", "lw/lw_tue", '[color=ff5f1f]')
                             Widget
                                 size_hint_x: .4
 
@@ -429,7 +433,7 @@ ScreenManager:
                                 text_color: 0, 1, 0
                             MDSwitch:
                                 id: lw_wed_switch
-                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.WEDNESDAY", "stories/lw/wed/", "lw/lw_wed", '   [color=00ff00]')
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.WEDNESDAY", "stories/lw/wed/", "lw/lw_wed", '[color=00ff00]')
                             Widget:
                                 size_hint_x: .4
 
@@ -442,7 +446,7 @@ ScreenManager:
                                 text_color: 0, 1, 1
                             MDSwitch:
                                 id: lw_thu_switch
-                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.THURSDAY", "stories/lw/thu/", "lw/lw_thu", '   [color=00ffff]')
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.THURSDAY", "stories/lw/thu/", "lw/lw_thu", '[color=00ffff]')
                             Widget:
                                 size_hint_x: .4
 
@@ -455,7 +459,7 @@ ScreenManager:
                                 text_color: 1, 0, 0.6
                             MDSwitch:
                                 id: lw_fri_switch
-                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.FRIDAY", "stories/lw/fri/", "lw/lw_fri", '   [color=ff0099]')
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.FRIDAY", "stories/lw/fri/", "lw/lw_fri", '[color=ff0099]')
                             Widget:
                                 size_hint_x: .4
 
@@ -463,6 +467,7 @@ ScreenManager:
                 Spacer
                 ConsoleWindow
                     id: console_lw
+                Spacer
 
             # 5th pane
             MDBoxLayout
@@ -564,79 +569,10 @@ ScreenManager:
                                 on_active: console_lw.text = ''
                             Widget:
                                 size_hint_x: .4
-
-#                            MDBoxLayout
-#                                Widget
-#                                    size_hint_x: 0.5
-#
-#                                MDBoxLayout:
-#                                    orientation:'vertical'
-#                                    CustomLbl:
-#                                        text: "C_1"
-#                                        text_color: 1, 0.941, 0
-#                                    MDSwitch:
-#                                        on_active: app.rundown_switch(self.active, "CTS.TX.TC2_LW", "stories/cs/", "cs/cs", '   [color=ffff00]')
-#
-#                                MDBoxLayout:
-#                                    orientation:'vertical'
-#                                    CustomLbl:
-#                                        text: "C_2"
-#                                        text_color: 1, 0.372, 0.121
-#                                    MDSwitch:
-#
-#                                MDBoxLayout:
-#                                    orientation:'vertical'
-#                                    CustomLbl:
-#                                        text: "C_3"
-#                                        text_color: 0, 1, 0
-#                                    MDSwitch:
-#
-#                                MDBoxLayout:
-#                                    orientation:'vertical'
-#                                    CustomLbl:
-#                                        text: "C_4"
-#                                        text_color: 0, 1, 1
-#                                    MDSwitch:
-#
-#                                MDBoxLayout:
-#                                    orientation:'vertical'
-#                                    CustomLbl:
-#                                        text: "CLR"
-#                                        text_color: 1, 0, 0.6
-#                                    MDSwitch:
-#                                        on_active: console_gb.text = ''
-#                                        on_active: console_lk.text = ''
-#                                        on_active: console_tm.text = ''
-#                                        on_active: console_lw.text = ''
-#
-#                            Widget
-#                                size_hint_y: None
-#                                height: 8
-#
-#                            MDBoxLayout:
-#                                size_hint_y: .3
-#                                size_hint_x: None
-#                                width: 80
-#                                Label
-#                                    text: 'freq:'
-#
-#
-#                                TextInput
-#                                    id: repeat_in_seconds_cs
-#                                    size_hint: None, None
-#                                    width: 45
-#                                    height: 30
-#                                    text: '30'
-#                                    background_color: .75, .75, .75
-#
-#
-#                            Widget
-#                                size_hint_y: None
-#                                height: 8
-
                 Spacer
                 ConsoleWindow
                     id: console_cs
+                Spacer
 
 
 <SettingsScreen@Screen>:
@@ -812,6 +748,7 @@ ScreenManager:
 
 #
 <ConsoleWindow@MDLabel>
+    padding: (5,5)
     canvas.before:
         Color:
             rgb: .6,.6,.6
@@ -820,6 +757,7 @@ ScreenManager:
             rectangle: self.x, self.y, self.width, self.height
 
     theme_text_color: "Custom"
+    text_color: 1,1,1
     multiline: True
     font_style: 'Caption'
     markup: True
@@ -835,8 +773,8 @@ ScreenManager:
 
 <HeaderAndSwitchBox@MDBoxLayout>
     orientation: 'vertical'
-    size_hint_y: None
-    height: 500
+    size_hint_y: .7
+#    height: 500
     canvas.before:
         Color:
             rgb: .6,.6,.6
