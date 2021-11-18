@@ -4,6 +4,7 @@ Config.set('graphics', 'height', '800')
 Config.set('graphics', 'minimum_width', '1200')
 Config.set('graphics', 'minimum_height', '800')
 import os
+import time
 from threading import Thread
 from kivymd.app import MDApp
 from kivy.clock import Clock
@@ -15,6 +16,7 @@ import re
 from kivy.uix.textinput import TextInput
 import json
 from kivy import properties as kp
+from email_notification import EmailNotify
 
 
 class ConsoleApp(MDApp):
@@ -33,7 +35,9 @@ class ConsoleApp(MDApp):
 
     def __init__(self):
         super().__init__()
-        #x Retrieve iNews FTP credentials and IP from secure external source
+        self.email = EmailNotify()
+
+        #x Retrieve iNews FTP credentials and IP from external source
         with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
         #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
@@ -43,7 +47,11 @@ class ConsoleApp(MDApp):
 
         self.dow = datetime.today().strftime('%a').lower()  # Set Day Of the Week to be used by automation day switching
 
-        Clock.schedule_interval(self.activity_monitor, 60)
+        Clock.schedule_interval(self.activity_monitor, 61)
+        self.init_log_aws_upload_schedule = Clock.schedule_interval(self.init_aws_log_upload, 60)
+
+        self.connection_limit = 5  # Limited amount of connections to server. Added security
+        self.connection_amount = 0
 
         # interrogated when the countdown ends to see if the process should repeat
         self.manual_switches = {'gb': False,
@@ -88,6 +96,24 @@ class ConsoleApp(MDApp):
         #         for input_box in prod:
         #             input_box.text = self.schedule[prod[-2:]][input_box]
 
+        self.root.ids.main_screen.ids['lk_auto_switch'].active = True
+        self.root.ids.main_screen.ids['lw_auto_switch'].active = True
+
+    def init_aws_log_upload(self, dt=None):
+        current_minute = int(str(datetime.now())[14:16])
+        if current_minute in [0, 15, 30, 45]:
+            self.init_log_aws_upload_schedule.cancel()
+            Clock.schedule_interval(self.aws_log_upload, 900)
+
+    def aws_log_upload(self, dt=None):
+        self.connection_amount = 0  # Hijack this 15 min periodical method to reset connection_caps
+        with open('log.txt', 'r') as f_in:
+            data = f_in.read().splitlines(True)
+        with open('log_for_aws.txt', 'w') as f_out:
+            f_out.writelines(data[-50:])
+        print('sending log to aws')
+        upload_to_aws('log_for_aws.txt', 'rundowns', 'log.txt')
+
     def activity_monitor(self, dt=None):
         """
         An extra safety net frequently checking the log to make sure that if a switch is on, it is updating the log
@@ -98,19 +124,16 @@ class ConsoleApp(MDApp):
         """
         current_minute = int(str(datetime.now())[14:16])
 
-        for prod, bool in self.manual_switches.items():
-            if bool:
+        for prod, active in self.manual_switches.items():
+            if active:
                 log = getattr(self, prod + '_log')
                 last_log_minute = int(log[-1][3:5])
                 difference = current_minute - last_log_minute
 
-                print('last: ' + str(last_log_minute))
-                print('current: ' + str(current_minute))
-                print('difference: ' + str(difference))
-
                 if difference not in [0, 1, -59]:  # -59 in list of acceptable differences because top of the hour minus
                     # the previous minute of 59 = -59
                     print('!!!!!!????? HAS A PROCESS FROZEN????!!!!!')
+                    self.email.email_error_notification()
                     # if this works send different tier email
 
     def update_schedule(self):
@@ -125,51 +148,72 @@ class ConsoleApp(MDApp):
         with open('schedule.json', 'w') as f:
             f.write(json.dumps(self.schedule, indent=4))
 
-
     def automate(self, activity, prod):
-        # self.dow = datetime.today().strftime('%a').lower()
-        # 1. Move switches according to day, Start process X
-        # 1.5 Update automation_switches. X
-        # 2. Loop and check schedule
-        # 3. Have it check day, change at midnight
+        """
+        Fired by the automate switch, it triggers the relevant day switch and in turn starts all other processes
+        :param activity:  The switches bool state
+        :param prod: 'gb', 'lk', etc
+        :return:
+        """
         try:
             self.root.ids.main_screen.ids[prod + self.dow + '_switch'].active = activity
         except KeyError:
             print('its the weekend yall')
+            self.root.ids.main_screen.ids[prod + '_fri_switch'].active = activity
 
     def inews_connect(self, local_dir, export_path, color):
+        """
+        Establish an FTP connection to the iNews server.
+        Firstly a connection error_limit is consulted to prevent flooding the server in error.
+        Then it will close any open conns for that production before using login credentials to establish an FTP login
+        The login remains open until it gets switched off in the UI
+        :param local_dir: local dir used to temporarily house the FTP downloads
+        :param export_path: the AWS dir
+        :param color: used to color output console text correctly
+        :return:
+        """
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
+        self.connection_amount += 1
+        if self.connection_amount <= self.connection_limit:
+            try:  # If session exists, quit
+                self.ftp_sessions[prod].quit()
+                print(str(datetime.now()) + 'Closing connection: ' + str(self.ftp_sessions[prod]))
+            except (KeyError, AttributeError):
+                pass  # Key doesn't exist before first run-through
 
-        try:  # If session exists, quit
-            self.ftp_sessions[prod].quit()
-            print(str(datetime.now()) + 'Closing connection: ' + str(self.ftp_sessions[prod]))
-        except (KeyError, AttributeError):
-            pass  # Key doesn't exist before first run-through
-
-        try:
-            self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
-            self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
-            self.console_log(local_dir[8:], color + "Opening new FTP connection.[/color]")
-            print(str(datetime.now())[:19] + ' ~ Opening new FTP connection for ' + prod.upper() + ': ' +
-                  str(self.ftp_sessions[prod]))
-        except OSError:  # Handles network disconnect error
-            print(str(datetime.now()) + 'Network is unreachable. Check internet connection')
-            return self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
-
+            try:
+                self.ftp_sessions[prod] = FTP(self.ip)  # Start a new FTP session and store it as an object in a dict
+                self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
+                self.console_log(local_dir[8:], color + "Opening new FTP connection.[/color]")
+                print(str(datetime.now())[:19] + ' ~ Opening new FTP connection for ' + prod.upper() + ': ' +
+                      str(self.ftp_sessions[prod]))
+            except OSError:  # Handles network disconnect error
+                print(str(datetime.now()) + 'Network is unreachable. Check internet connection')
+                return self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
+        else:
+            self.console_log(local_dir[8:], color + "Conn limit reached. Restart software.[/color]")
+            print(str(datetime.now())[:19] + ' ~ 5/5 connections per 15 min exceeded. Wait 15 min or restart software')
+            self.email.email_error_notification()
+            self.root.ids.main_screen.ids[prod + '_auto_switch'].active = False
 
     def inews_disconnect(self, local_dir, export_path, color):
+        """
+        Gracefully disconnect the FTP link to the iNews server.
+        """
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
 
-        if prod == 'l':  # if 'kill' command sent
+        # When closing the App from the UI 'killall' is sent to this method to close any open connections
+        if prod == 'l':
             for sesh in self.ftp_sessions.values():
                 sesh.quit()
                 print(str(sesh) + ': connection has been closed')
-        else:
+
+        else:  # If export_path != 'killall', close specific rundown conn
             self.ftp_sessions[prod].quit()
             print(str(datetime.now())[:19] + ' ~ Closing FTP connection for ' + prod.upper() + ': ' +
                   str(self.ftp_sessions[prod]))
             del self.ftp_sessions[prod]
-            self.console_log(local_dir[8:], color + "Terminated. Closing FTP conn.")
+            self.console_log(local_dir[8:], color + "Terminated. Closing FTP conn.[/color]")
 
     def rundown_switch(self, switch, rundown, local_dir, export_path, color):
         """
@@ -180,9 +224,7 @@ class ConsoleApp(MDApp):
         note:~ These params are passed down through each method
         :param switch: bool value passed by the state of the switch that triggers this method
         :param rundown: iNews rundown dir path
-        :param local_dir: local dir used to temporarily house the FTP downloads
-        :param export_path: the AWS dir
-        :param color: used to color output console text correctly
+
         """
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
         self.manual_switches[prod] = switch  # Update dict used at the end of the countdown repeat - yes/no
@@ -300,7 +342,7 @@ class ConsoleApp(MDApp):
         """
         Once the countdown has ended, and jsut before repeating the process, check to see if the Day Of the Week has
         changed since the last run-through.
-        :param current_dow: get dow in shortend string, e.g. 'mon', 'thu'
+        :param current_dow: get dow in shortened string, e.g. 'mon', 'thu'
         """
         prod = export_path[3:5]
         current_dow = datetime.today().strftime('%a').lower()
@@ -310,6 +352,11 @@ class ConsoleApp(MDApp):
 
         if self.dow == current_dow:  # If the day has not changed since the last pull, repeat as normal
             return self.collect_rundown_thread(rundown, local_dir, export_path, color)
+
+        elif current_dow == 'sat' or current_dow == 'sun':  # If weekend, check every hour for change until 'mon'
+            time.sleep(3600)
+            return self.check_dow_and_proceed(rundown, local_dir, export_path, color)
+
         else:  # If the hour has passed midnight and entered a new day since the last pull
             self.root.ids.main_screen.ids[prod + '_' + self.dow + '_switch'].active = False  # Turn off yesterday switch
             self.dow = current_dow  # Update Day Of Week
@@ -330,15 +377,19 @@ class ConsoleApp(MDApp):
 
         # Refine the log to not repeat countdown lines, replace the last one instead
         if 'pulled' in text or 'Repeating' in text:
-            if 'download' not in log[-1] and 'identical' not in log[-1] and 'empty' not in log[-1]:
+            # Don't delete previous lines containing:
+            if 'download' not in log[-1] and 'identical' not in log[-1] \
+                    and 'empty' not in log[-1] and 'AWS' not in log[-1]:
                 log.pop(-1)
 
         log.append(str(time) + ': ' + text)  # add text and time stamp to log
-        with open("log.txt", "a") as logfile:
-            logfile.write(str(datetime.now())[:-7] + ' ' + filename[:2].upper() + ' ' + text[17:-8] + '\n')
+
+        if 'pulled' not in text:
+            with open("log.txt", "a") as logfile:
+                logfile.write(str(datetime.now())[:-7] + ' ' + filename[:2].upper() + ' ' + text[14:-8] + '\n')
 
         # Calculate how many lines should be displayed dependant on the height of the console window
-        console_height = (self.root.ids.main_screen.ids['console_' + filename[:2]].height / 20)
+        console_height = (self.root.ids.main_screen.ids['console_' + filename[:2]].height / 17)
 
         if len(log) > console_height:  # keep the log fewer than n rows
             log.pop(0)
