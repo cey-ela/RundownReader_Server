@@ -8,7 +8,7 @@ import time
 import ftplib as ftp
 from func_timeout import func_timeout, FunctionTimedOut
 from kivy.clock import Clock
-from email_notification import email_error_notification
+from email_notification import EmailNotify
 
 
 class InewsPullSortPush:
@@ -26,105 +26,120 @@ class InewsPullSortPush:
         self.data_pv = []
         self.error_count = 0
         self.error_limit = 5
+        self.email = EmailNotify()
 
     def init_process(self, inews_path, local_dir, export_path, color):
-        # 1STx
-        self.app.console_log(export_path, color + 'Connecting...[/color]')
-        try:
+        """A sequential list of methods to be carried out in order. An instance of this class is called every time
+        the repeat countdown reaches 0. It is permitted n(error_limit) connection timeouts or other errors before
+        shutting down all connections as a matter of safety. Email notifications will be sent"""
+
+        self.app.console_log(export_path, color + 'Starting rundown download[/color]')
+
+
+        # 1ST METHOD: Retrieve XML data from iNews via FTP
+        try:  # Kick off the iNews data pull via a special func_timeout method: If n seconds are exceeded
+            # FunctionTimedOut exception is raised
             func_timeout(45, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
 
-        except ftp.error_reply as e:  # If the process times out during the RETR pull, you may see this error
-            # on its next retry. Simply rerunning will not work. Exit FTP connection and reestablish
-            email_error_notification()
-            self.app.inews_disconnect(local_dir, export_path, color)
-            print(str(e) + str(datetime.datetime.now()) + ' waiting 15 seconds until retry')
-            self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
-            time.sleep(15)
-            self.app.inews_connect(local_dir, export_path, color)
-
         except FileNotFoundError:  # Rundown is empty, early exit/return back to main countdown/repeat
-            print('RUNDOWN EMPTY')
+            print(str(datetime.datetime.now()) + 'Rundown empty - Skipping AWS push')
+            self.app.console_log(export_path, color + 'Rundown empty. No upload[/color]')
             return
 
         except (FunctionTimedOut, TimeoutError, OSError) as e:
-            email_error_notification()
-            self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
-            print('iNews error @ ' + str(datetime.datetime.now()) + ':\n' + str(e))
+            # Broad range of Timeout Errors to catch conn issues
+            self.app.console_log(export_path, color + ' Connection error - see Python Terminal[/color]')
+            print(str(datetime.datetime.now()) + ' - Exception:\n' + str(e) + '\n')
             self.error_count += 1
-            if self.error_count <= self.error_limit:
-                print('Retrying in 15 seconds. Attempt ' + str(self.error_count) + '/5...\n')
-                time.sleep(15)
-                return self.init_process(inews_path, local_dir, export_path, color)
-            else:  # If error cap is reached. Gracefully shut down.
 
+            if self.error_count <= self.error_limit:
+                self.app.inews_disconnect(local_dir, export_path, color)
+                print(str(datetime.datetime.now()) + 'Retrying in 15 seconds. Attempt ' +
+                      str(self.error_count) + '/5...\n')
+                time.sleep(15)
+                self.app.inews_connect(local_dir, export_path, color)
+                time.sleep(1)
+                return self.init_process(inews_path, local_dir, export_path, color)  # Retry the process
+
+            else:  # If error cap is reached. Gracefully shut down.
+                self.email.email_error_notification()
                 self.app.console_log(export_path,
                                      color + 'Error limit reached. Processes stopped. See terminal[/color]')
                 print('Error cap of 5 has been exceeded. Shutting down. \n'
                       'Please investigate and restart software when ready.')
                 for sesh in self.app.ftp_sessions.values():
                     sesh.quit()
-                for switch in self.app.repeat_switches:
-                    self.app.repeat_switches[switch] = False
+                for switch in self.app.manual_switches:
+                    self.app.manual_switches[switch] = False
+
+                return  # return to repeat countdown. It will safely fail on repeat as FTP conns are closed
+
+        # except ftp.error_reply:  # If the process times out during the RETR pull, you may see this error
+        #     # on its next retry. Simply rerunning will not work. Exit FTP connection and reestablish
+        #     self.email.email_error_notification('Timeout during previous pull has expired the FTP session')
+        #     self.app.inews_disconnect(local_dir, export_path, color)
+        #     print('Waiting 15 seconds until retry...')
+        #     self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
+        #     time.sleep(15)
+        #     self.app.inews_connect(local_dir, export_path, color)
+
+
 
         if self.error_count < self.error_limit:
-            try:  # If error exerienced on ull, this may fuck uk. Return to countdown hoefully
+
+            # 2ND METHOD: Convert downloaded iNews data into Python dict
+            try:  # If timeout error is encountered, depending on the precise time the proceeding method, convert_xml...
+                # may be called without any data to work with. This catches that and returns back to repeat countdown
                 self.convert_xml_to_dict(local_dir)
+                self.app.console_log(export_path, color + "Converting from NSML to dict[/color]")
             except FileNotFoundError:
                 return
 
-            self.app.console_log(export_path, color + "Converting stories from NSML to local dict[/color]")
-
+            # 3RD METHOD: Calculate and set own timings for the show based on raw data
             self.set_backtimes()
             self.app.console_log(export_path, color + "Calculating backtimes[/color]")
 
+            # 4TH METHOD: Any final touches, like adding extra key/val to the dict
             self.finishing_touches()
 
+            # 5TH METHOD: Create another version of the data for Page View
             self.create_pv_version(export_path)
 
+            # 6TH METHOD: Convert dict to .json in preparation for push to AWS
             self.create_json_files(export_path)
             self.app.console_log(export_path, color + "Converting dict to json[/color]")
 
     def pull_xml_via_ftp(self, inews_path, local_dir, export_path, color):
-        # Start by making sure the target working folder is completely empty. If process previously exited early there
-        # may be some remnants
-        # try:
-        #     for remnants in os.listdir(local_dir):
-        #         os.remove(local_dir + remnants)
-        # except PermissionError as e:
-        #     print(e)
 
+        """Get data from iNews via FTP"""
         counter = 0  # Used to display amount of files in the output console
-        ftp_sesh = self.app.ftp_sessions[export_path[3:5]]
 
-        ftp_sesh.cwd(inews_path)
+        ftp_sesh = self.app.ftp_sessions[export_path[3:5]]  # Select correct FTP session from session list
 
-        # try:  # this happen because of 'ftplib.error_reply: 200 TYPE A command successful.
-        #     # think this is from reusing old FTP conns
-        #     # Store story ID as list of titles. E.g. '5AE4RT2'
-        self.story_ids = ftp_sesh.nlst()
-        # except ftp.error_reply as e:
-        #     print(e)
+        ftp_sesh.cwd(inews_path)  # cwd = current working dir. Aka set iNews rundown
 
-        if not self.story_ids:  # If rundown empty
+        self.story_ids = ftp_sesh.nlst()  # Retrieve list of story names/story_ids in rundown and store in local list
+
+        if not self.story_ids:  # If rundown empty, clean early exit to reenter countdown procedure
             raise FileNotFoundError
 
         # Cycles through each line/Story ID and opens as a new file
         # RETRIEVE the contents of each Story ID from iNews and store it in new_story_file hen save to local_dir
         for story_id_title in self.story_ids:
-            # self.epoch_time = int(time.time())
+
             try:
                 with open(local_dir + story_id_title, "wb") as new_story_file:
                     ftp_sesh.retrbinary("RETR " + story_id_title, new_story_file.write)
+                    # new_story_file.close()
 
-            except ftp.error_perm:  # Catch RETR 'file not found' error, move onto next iteration
-                new_story_file.close()
+            except (ftp.error_perm,EOFError, AttributeError):  # Permanent error - all actions will have to cease and
+                # the ftp conn reestablished. Raises vague but final error_perm exception
+                # new_story_file.close()
                 continue
 
-            new_story_file.close()
             counter += 1
-            # self.epoch_time = int(time.time())
-            if counter % 25 == 0:
-                self.app.console_log(export_path, color + str(counter) + ' stories pulled[/color]')
+            # if counter % 25 == 0:
+            self.app.console_log(export_path, color + str(counter) + ' stories pulled[/color]')
 
     def convert_xml_to_dict(self, local_dir):
         # TODO: NOTE - focus, brk, and floated default false values removed, try and work App without these
@@ -132,39 +147,123 @@ class InewsPullSortPush:
         Stripping out the bits we don't need and reformatting some dict key/values along the way.
         By the end we are left with a neat list of dicts (self.data)
         NSML (XML) Example:
+
         <nsml version="-//AVID//DTD NSML 1.0//EN">
         <head>
-        3<meta rate=180 float>
-        <rgroup number=46></rgroup>
-        <wgroup number=18></wgroup>
-        <formname>THISMORNINGS_V2</formname>
-        7<storyid>259847d2:00ce0ba3:505b6fc5</storyid>
+        <meta words=57 rate=180>
+        <rgroup number=23></rgroup>
+        <wgroup number=14></wgroup>
+        <formname>LW-STORY-GEN</formname>
+        <storyid>066f5a95:00242d79:61895a16</storyid>
         </head>
         <story>
         <fields>
-        <f id=source></f>
-        <f id=var-script></f>
-        <f id=camera></f>
-        <f id=location></f>
         <f id=page-number></f>
-        <f id=title>+ PERMA &amp; HASHTAG</f>
+        <f id=done></f>
+        <f id=rewrite></f>
+        <f id=title>** OPENING SEQUENCE</f>
+        <f id=camera>CAM1</f>
         <f id=video-id></f>
-        <f id=event-status></f>
-        <f id=item-channel></f>
-        <f id=sound></f>
-        <f id=audio-time>0</f>
+        <f id=pres1> </f>
+        <f id=pres2></f>
+        <f id=format>M/S -&gt; M/CU RUTH</f>
+        <f id=audio-time>19</f>
         <f id=runs-time>0</f>
-        <f id=total-time>0</f>
+        <f id=total-time uec>60</f>
         <f id=back-time></f>
-        <f id=modify-date>1616605125</f>
-        <f id=modify-by>barrtho1</f>
+        <f id=event-status></f>
+        <f id=item-channel>*!</f>
+        <f id=grfx> </f>
+        <f id=edit></f>
+        <f id=painfo></f>
+        <f id=create-date>1636025762</f>
+        <f id=create-by>richjack</f>
+        <f id=modify-date>1636391446</f>
+        <f id=modify-by>darigard</f>
         <f id=air-date></f>
-        <f id=var-1></f>
-        <f id=gfxready></f>
-        <f id=gfxprep></f>
-        <f id=vartm-01></f>
+        <f id=copyright></f>
+        <f id=timecode></f>
+        <f id=important></f>
+        <f id=channel></f>
+        <f id=sound></f>
+        <f id=grams></f>
+        <f id=var-3></f>
         </fields>
-        We only want some meta data from line 3, story_id form line 7 and then everything between /fields.
+        <body>
+        <p><a idref=0> <pi><b>RUTH</b></pi></p>
+        <p>Hello and welcome to your Tuesday Loose Women. </p>
+        <p>Joining me Ruth Langsford this Tuesday lunchtime, it's:</p>
+        <p><cc><b>CAM2: KELLE</b></cc></p>
+        <p>Kelle Bryan,</p>
+        <p><cc><b>CAM3: JANET</b></cc></p>
+        <p>Janet Street-Porter</p>
+        <p><cc><b>CAM4: JANE</b></cc></p>
+        <p>and Jane Moore. </p>
+        <p></p>
+        <p><pi><b>WIPE</b></pi></p>
+        <p> Coming up, </p>
+        <p><a idref=1><cc><b>COMING UP STRAP:  </b></cc></p>
+        <p><cc><b>ULAY: </b></cc></p>
+        <p></p>
+        <p><pi><b>**PAUSE FOR SOT**</b></pi></p>
+        <p><pi><b>L WIPE </b></pi></p>
+        <p><a idref=2><pi><b>SOT ULAY: XXXX</b></pi></p>
+        <p><pi><b>Dip sound at xx secs</b></pi></p>
+        <p><cc><b><i>''TRANSCRIBE SOT HERE'' </i></b></cc></p>
+        <p><a idref=3><cc><b>COMING UP STRAP:  </b></cc></p>
+        <p></p>
+        <p>And we'll be going ringside with Paris Fury,</p>
+        <p><cc><b>ULAY: PARIS &amp; TYSON</b></cc></p>
+        <p><a idref=4><cc><b>COMING UP STRAP: </b></cc></p>
+        <p><cc><b>STILLS: PARIS &amp; TYSON, PARIS &amp; FAMILY STILLS</b></cc></p>
+        <p>as she opens up about the magic and mayhem of life with a world champion boxer, and how she keeps her marriage and family strong. </p>
+        <p></p>
+        <p><pi><b>ANIMATE OFF </b></pi></p>
+        <p><pi><b>READ ON</b></pi></p>
+        <p>.</p>
+        <p></p>
+        </body>
+        <aeset>
+        <ae id=0>
+        <ap>]] S3.0 G 0 [[</ap>
+        <ap></ap>
+        </ae>
+        <ae id=1>
+        <ap>]] S3.0 M 0 [[</ap>
+        <mc>
+        <ap>maestro ]] 80 YNYAM 5 [[ [A] (LW 2020 COMING_UP_CORNER_NO WIPE) /QWQWQWQW/12.45pm/1</ap>
+        </mc>
+        </ae>
+        <ae id=2>
+        <ap>]] S3.0 G 0 [[</ap>
+        <ap>XXXX SOT ULAY</ap>
+        <ap>DIP AT XX SECS</ap>
+        <ap>CLIP ID:</ap>
+        <ap>IQ:</ap>
+        <ap>OQ:</ap>
+        <ap>SOT RUNS=</ap>
+        <ap>FULL CLIP RUNS </ap>
+        <ap>XXXX</ap>
+        </ae>
+        <ae id=3>
+        <ap>]] S3.0 M 0 [[</ap>
+        <mc>
+        <ap>maestro ]] 83 YNYAM 5 [[ [A] (LW 2020 COMING_UP_CORNER_NO WIPE) /QWQWQWQW/12.45pm/1</ap>
+        </mc>
+        </ae>
+        <ae id=4>
+        <ap>]] S3.0 M 0 [[</ap>
+        <mc>
+        <ap>maestro ]] 84 YNYAM 5 [[ [A] (LW 2020 COMING_UP_CORNER_NO WIPE) /QWQWQWQW/12.45pm/1</ap>
+        </mc>
+        </ae>
+        </aeset>
+        </story>
+
+
+
+
+
         """
 
         # Cycle through and open each newly created story file
@@ -211,6 +310,8 @@ class InewsPullSortPush:
                         # OMIT?
                         continue
 
+
+                    #  or (line.decode()).strip() == "</body>":
                     elif (line.decode()).strip() == "</fields>":
                         copy = False
                         continue
@@ -249,23 +350,16 @@ class InewsPullSortPush:
 
                 if not break_out_flag:
                     # Append story_dict to 'data' list
-                    # 1631780753
-                    # 1631704369
-
                     self.data.append(story_dict)
-                    # try:
-                    #     print(story_dict['air-date'])
-                    # except:
-                    #     pass
 
-                # Close story file
-                story_file.close()
+                # # Close story file
+                # story_file.close()
 
-                # 8) Deletes the file we just read as it's no longer needed
-                try:
-                    os.remove(local_dir + story_id_title)
-                except PermissionError as e:
-                    print(e)
+            # 8) Deletes the file we just read as it's no longer needed
+            try:
+                os.remove(local_dir + story_id_title)
+            except PermissionError as e:
+                print(str(datetime.datetime.now()), str(e))
 
     def set_backtimes(self):
         """
@@ -386,19 +480,19 @@ class InewsPullSortPush:
                     story_dict['pos'] = None
 
             except KeyError as e:
-                print('key error: ' + str(e))
+                pass
 
         for r in range(12):
             self.data.append({
-                "camera": "BYEBYE",
-                "format": "CYA",
+                "camera": "byebye",
+                "format": "cya",
                 "page": "9999",
                 "story_id": "over",
                 "seconds": 0,
                 "backtime": '23:30:00',
                 "total":"0",
                 "focus": False,
-                "title": "another ones bites the dust"
+                "title": " ~ end of show ~ "
             }, )
 
     def create_pv_version(self, export_path):
@@ -413,7 +507,7 @@ class InewsPullSortPush:
                     if story_dict['page'][-2:] == '00':
                         slices.append(index)
             except KeyError as e:
-                print('key error: ' + str(e))
+                pass
 
         # Using the current and next index from slice, attempt to store chunks
         # of self.data in new_dicts
@@ -430,17 +524,3 @@ class InewsPullSortPush:
 
         with open('exports/pv/' + export_path + '.json', 'w') as outfile:
             outfile.write(json.dumps(self.data_pv, indent=4))
-
-# inews = InewsPullSortSave()
-
-# inews.pull_xml_via_ftp("*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/mon/")
-# inews.convert_xml_to_dict("stories/tm/mon/")
-# inews.set_backtimes()
-# inews.finishing_touches()
-# inews.convert_to_json("tm/mon")
-
-# inews.pull_xml_via_ftp("*LW.RUNORDERS.MONDAY", "stories/lw/mon/")
-# inews.convert_xml_to_dict("stories/lw/mon/")
-# inews.set_backtimes()
-# inews.finishing_touches()
-# inews.convert_to_json("lw/lw_mon")

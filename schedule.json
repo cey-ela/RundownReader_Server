@@ -42,7 +42,7 @@
         "freq_four": "3000"
     },
     "lw": {
-        "start_one": "06:00",
+        "start_one": "10:00",
         "finish_one": "11:30",
         "freq_one": "300",
         "start_two": "11:30",
@@ -52,8 +52,8 @@
         "finish_three": "13:30",
         "freq_three": "30",
         "start_four": "13:30",
-        "finish_four": "14:00",
-        "freq_four": "60"
+        "finish_four": "13:31",
+        "freq_four": "3000"
     },
     "cs": {
         "start_one": "07:00",

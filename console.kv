@@ -1,3 +1,601 @@
+ScreenManager:
+    id: screen_manager
+
+    MainScreen:
+        id: main_screen
+        name: 'main_screen'
+        manager: 'screen_manager'
+
+    SettingsScreen:
+        id: settings_screen
+        name: 'settings_screen'
+        manager: 'screen_manager'
+
+<MainScreen@Screen>:
+
+    # Background
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'assets/bg.png'
+
+
+        MDBoxLayout
+            size_hint_y: None
+            height: 100
+
+            canvas.before:
+                Color:
+                    rgba: 0,0,0,1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+                Color:
+                    rgb: 1,1,1
+                Line:
+                    width: 5
+                    rectangle: self.x, self.y, self.width, self.height
+            Widget
+                canvas.before:
+                    Rectangle:
+                        size: 80, 80
+                        pos: self.x + 12, self.y + 12
+                        source: 'assets/icon.png'
+
+            Widget
+                size_hint_x: .1
+
+            Widget
+                canvas.before:
+                    Rectangle:
+                        size: 800, 80
+                        pos: (self.center_x / 4), self.y + 10
+                        source: 'assets/title.png'
+
+
+
+
+            MDIconButton
+                theme_text_color: 'Custom'
+                icon: 'cog-outline'
+                text_color: 0, 1, 0
+                user_font_size: 32.5
+                pos_hint: {"center_x": .5, "center_y": .5}
+                size_hint_x: None
+                width: 50
+
+
+
+
+        # Split the screen in five
+        MDBoxLayout
+
+            # 1st pane - GMB
+            MDBoxLayout
+                orientation: 'vertical'
+
+                # Upper box. Header and switches
+                Spacer
+                HeaderAndSwitchBox
+
+                    # Header
+                    MDBoxLayout
+                        size_hint_y: .15
+                        Widget
+                        MDLabel
+                            text: '  GMB'
+                            theme_text_color: "Custom"
+                            text_color: .9,.9,.9
+                            halign: 'center'
+                            font_style: 'H6'
+                        Widget
+
+                    # Labels and Switches
+                    MDBoxLayout
+                        orientation: 'vertical'
+                        Widget
+                            size_hint_y: .4
+
+                        # Automate Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "Automate"
+                                text_color: 1, 1, 1
+                            MDSwitch:
+#                                on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0600", "stories/gb/0600/", "gb/gb_0600",'   [color=ffff00]')
+                            Widget
+                                size_hint_x: .4
+
+                        # 0600 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "0600"
+                                text_color: 1, 0.941, 0
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0600", "stories/gb/0600/", "gb/gb_0600",'   [color=ffff00]')
+                            Widget
+                                size_hint_x: .4
+
+                        # 0630 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "0630"
+                                text_color: 1, 0.372, 0.121
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0630", "stories/gb/0630/", "gb/gb_0630", '   [color=ff5f1f]')
+                            Widget
+                                size_hint_x: .4
+
+                        # 0700 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "0700"
+                                text_color: 0, 1, 0
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0700", "stories/gb/0700/", "gb/gb_0700", '   [color=00ff00]')
+                            Widget:
+                                size_hint_x: .4
+
+                        # 0800 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "0800"
+                                text_color: 0, 1, 1
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0800", "stories/gb/0800/", "gb/gb_0800", '   [color=00ffff]')
+                            Widget:
+                                size_hint_x: .4
+
+                        # 0900 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "0900"
+                                text_color: 1, 0, 0.6
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0900", "stories/gb/0900/", "gb/gb_0900", '   [color=ff0099]')
+                            Widget:
+                                size_hint_x: .4
+
+                # Bottom box - Console
+
+                Spacer
+                ConsoleWindow
+                    id: console_gb
+                Spacer
+
+            # 2nd pane - LK Box
+            MDBoxLayout
+                orientation: 'vertical'
+
+                # Upper box. Header and switches
+                Spacer
+                HeaderAndSwitchBox
+
+                    # Header
+                    MDBoxLayout
+                        size_hint_y: .15
+                        Widget
+                        MDLabel
+                            text: '  LK'
+                            halign: 'center'
+                            theme_text_color: 'Custom'
+                            font_style: 'H6'
+                            text_color: .9,.9,.9
+                        Widget
+
+
+
+                    # Labels and Switches
+                    MDBoxLayout
+                        orientation: 'vertical'
+                        Widget
+                            size_hint_y: .4
+
+                        # Automate Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "Automate"
+                                text_color: 1, 1, 1
+                            MDSwitch:
+                                id: lk_auto_switch
+                                on_active: lk_tx_switch.active = self.active
+
+                            Widget
+                                size_hint_x: .4
+
+
+                        # Faux switches to mirror other panes
+                        Widget
+                        Widget
+
+
+                        # TX Switch and Label
+                        MDBoxLayout
+                            Widget
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "TX    "
+                                text_color: 0, 1, 0
+
+                            MDSwitch:
+                                id: lk_tx_switch
+                                on_active: app.automation_switches['lk'] = self.active
+                                on_active: app.rundown_switch(self.active, "*GMB-LK.*LK.TX.LORRAINE", "stories/lk/tx/", "lk/lk_tx", '[color=00ff00]')
+                            Widget
+                                size_hint_x: .4
+
+
+                        Widget
+                        Widget
+
+
+
+                # Bottom box - Console
+                Spacer
+                ConsoleWindow
+                    id: console_lk
+                Spacer
+
+            # 3rd pane- TM
+            MDBoxLayout
+                orientation: 'vertical'
+
+                # Upper box. Header and switches
+                Spacer
+                HeaderAndSwitchBox
+
+                    # Header
+                    MDBoxLayout
+                        size_hint_y: .15
+                        Widget
+                        MDLabel
+                            text: '  TM'
+                            halign: 'center'
+                            theme_text_color: "Custom"
+                            font_style: 'H6'
+                            text_color: .9,.9,.9
+                        Widget
+
+
+                    # Labels and Switches
+                    MDBoxLayout
+                        orientation: 'vertical'
+                        Widget
+                            size_hint_y: .4
+
+                        # Automate Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "Automate"
+                                text_color: 1, 1, 1
+                            MDSwitch:
+#                                on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0600", "stories/gb/0600/", "gb/gb_0600",'   [color=ffff00]')
+                            Widget
+                                size_hint_x: .4
+
+                        # Mon Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "MON"
+                                text_color: 1, 0.941, 0
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.MONDAY.RUNORDER", "stories/tm/mon/", "tm/tm_mon", '   [color=ffff00]')
+                            Widget
+                                size_hint_x: .4
+
+                        # Tues Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "TUE"
+                                text_color: 1, 0.372, 0.121
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/tue/", "tm/tm_tue", '   [color=ff5f1f]')
+                            Widget
+                                size_hint_x: .4
+
+                        # Weds Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "WED"
+                                text_color: 0, 1, 0
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.WEDNESDAY.RUNORDER", "stories/tm/wed/", "tm/tm_wed", '   [color=00ff00]')
+                            Widget:
+                                size_hint_x: .4
+
+                        # Thurs Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "THU"
+                                text_color: 0, 1, 1
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.THURSDAY.RUNORDER", "stories/tm/thu/", "tm/tm_thu", '   [color=00ffff]')
+                            Widget:
+                                size_hint_x: .4
+
+                        # Fri Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "FRI"
+                                text_color: 1, 0, 0.6
+                            MDSwitch:
+                                #on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/fri/", "tm/tm_fri", '   [color=ff0099]')
+                            Widget:
+                                size_hint_x: .4
+
+
+                Spacer
+                ConsoleWindow
+                    id: console_tm
+                Spacer
+
+            # 4th pane
+            MDBoxLayout
+                orientation: 'vertical'
+
+                # Upper box. Header and switches
+                Spacer
+                HeaderAndSwitchBox
+
+                    # Header
+                    MDBoxLayout
+                        size_hint_y: .15
+                        Widget
+                        MDLabel
+                            text: 'LW'
+                            theme_text_color: "Custom"
+                            text_color: .9,.9,.9
+                            halign: 'center'
+                            font_style: 'H6'
+                        Widget
+
+                    # Labels and Switches
+                    MDBoxLayout
+                        orientation: 'vertical'
+                        Widget
+                            size_hint_y: .4
+
+                        # Automate Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "Automate"
+                                text_color: 1, 1, 1
+                            MDSwitch:
+                                id: lw_auto_switch
+                                on_active: app.automate(self.active, 'lw_')
+                                on_active: app.automation_switches['lw'] = self.active
+                            Widget
+                                size_hint_x: .4
+
+                        # Mon Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "MON"
+                                text_color: 1, 0.941, 0
+                            MDSwitch:
+                                id: lw_mon_switch
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.MONDAY", "stories/lw/mon/", "lw/lw_mon", '[color=ffff00]')
+                            Widget
+                                size_hint_x: .4
+
+                        # Tues Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "TUE"
+                                text_color: 1, 0.372, 0.121
+                            MDSwitch:
+                                id: lw_tue_switch
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.TUESDAY", "stories/lw/tue/", "lw/lw_tue", '[color=ff5f1f]')
+                            Widget
+                                size_hint_x: .4
+
+                        # Weds Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "WED"
+                                text_color: 0, 1, 0
+                            MDSwitch:
+                                id: lw_wed_switch
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.WEDNESDAY", "stories/lw/wed/", "lw/lw_wed", '[color=00ff00]')
+                            Widget:
+                                size_hint_x: .4
+
+                        # Thurs Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "THU"
+                                text_color: 0, 1, 1
+                            MDSwitch:
+                                id: lw_thu_switch
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.THURSDAY", "stories/lw/thu/", "lw/lw_thu", '[color=00ffff]')
+                            Widget:
+                                size_hint_x: .4
+
+                        # Fri Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "FRI"
+                                text_color: 1, 0, 0.6
+                            MDSwitch:
+                                id: lw_fri_switch
+                                on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.FRIDAY", "stories/lw/fri/", "lw/lw_fri", '[color=ff0099]')
+                            Widget:
+                                size_hint_x: .4
+
+
+                Spacer
+                ConsoleWindow
+                    id: console_lw
+                Spacer
+
+            # 5th pane
+            MDBoxLayout
+                orientation: 'vertical'
+
+                # Upper box. Header and switches
+                Spacer
+                HeaderAndSwitchBox
+
+                    # Header
+                    MDBoxLayout
+                        size_hint_y: .15
+                        Widget
+                        MDLabel
+                            text: 'CSTM'
+                            theme_text_color: "Custom"
+                            text_color: .9,.9,.9
+                            halign: 'center'
+                            font_style: 'H6'
+                        Widget
+
+                    # Labels and Switches
+                    MDBoxLayout
+                        orientation: 'vertical'
+                        Widget
+                            size_hint_y: .4
+
+                        # Automate Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "Automate"
+                                text_color: 1, 1, 1
+                            MDSwitch:
+#                                on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0600", "stories/gb/0600/", "gb/gb_0600",'   [color=ffff00]')
+                            Widget
+                                size_hint_x: .4
+
+                        # C1 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "C_1"
+                                text_color: 1, 0.941, 0
+                            MDSwitch:
+
+                            Widget
+                                size_hint_x: .4
+
+                        # C2 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "C_2"
+                                text_color: 1, 0.372, 0.121
+                            MDSwitch:
+
+                            Widget
+                                size_hint_x: .4
+
+                        # C3 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "C_3"
+                                text_color: 0, 1, 0
+                            MDSwitch:
+
+                            Widget:
+                                size_hint_x: .4
+
+                        # C4 Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "C_4"
+                                text_color: 0, 1, 1
+                            MDSwitch:
+
+                            Widget:
+                                size_hint_x: .4
+
+                        # Clear Label and Switch
+                        MDBoxLayout:
+                            Widget:
+                                size_hint_x: .4
+                            CustomLbl:
+                                text: "CLR"
+                                text_color: 1, 0, 0.6
+                            MDSwitch:
+                                on_active: console_gb.text = ''
+                                on_active: console_lk.text = ''
+                                on_active: console_tm.text = ''
+                                on_active: console_lw.text = ''
+                            Widget:
+                                size_hint_x: .4
+                Spacer
+                ConsoleWindow
+                    id: console_cs
+                Spacer
+
+
+<SettingsScreen@Screen>:
+    # Automate, centre column APP.UPDATE_SCHEDULE
+    MDBoxLayout:
+        orientation: 'vertical'
+        Automate
+            id: auto_gb
+            tag: 'gb'
+        Automate
+            id: auto_lk
+            tag: 'lk'
+        Automate
+            id: auto_tm
+            tag: 'tm'
+        Automate
+            id: auto_lw
+            tag: 'lw'
+        Automate
+            id: auto_cs
+        Spacer
+
+
 <AutoTI>
     multiline: False
     font_size: 12.8
@@ -150,6 +748,7 @@
 
 #
 <ConsoleWindow@MDLabel>
+    padding: (5,5)
     canvas.before:
         Color:
             rgb: .6,.6,.6
@@ -158,529 +757,27 @@
             rectangle: self.x, self.y, self.width, self.height
 
     theme_text_color: "Custom"
+    text_color: 1,1,1
     multiline: True
     font_style: 'Caption'
     markup: True
 
-<WhitLbl@MDLabel>
+
+    
+<CustomLbl@MDLabel>
     theme_text_color: "Custom"
     text_color: 1, 0.372, 0.121
+    pos_hint: {"center_x": .5, "center_y": .7}
 
 
 
-BoxLayout:
+<HeaderAndSwitchBox@MDBoxLayout>
     orientation: 'vertical'
-
+    size_hint_y: .7
+#    height: 500
     canvas.before:
-#        Color:
-#            rgb: 0,0,0
-        Rectangle:
-            pos: self.pos
-            size: self.size
-            source: 'assets/bg.png'
-
-
-    MDBoxLayout
-        size_hint_y: .05
-        Label:
-            text: 'START'
-            canvas.before:
-                Color:
-                    rgb: .85,.85,.85
-                Line:
-                    width: 4
-                    rectangle: self.x, self.y, self.width, self.height
-        BoxLayout
-            canvas.before:
-                Color:
-                    rgb: .85,.85,.85
-                Line:
-                    width: 4
-                    rectangle: self.x, self.y, self.width, self.height
-            Widget
-            Label:
-                text: 'AUTOMATE'
-
-            BoxLayout
-                orientation: 'vertical'
-                Widget
-                BoxLayout
-                    Widget
-                    Button
-                        text: 'UPDATE'
-                        font_size: 10
-                        on_release: app.update_schedule()
-                        size_hint_x: 2
-                        valign: 'center'
-                    Widget
-                Widget
-
-        Label:
-            text: 'LOG'
-            canvas.before:
-                Color:
-                    rgb: .85,.85,.85
-                Line:
-                    width: 4
-                    rectangle: self.x, self.y, self.width, self.height
-
-
-    # Split the screen in three
-
-    MDBoxLayout
-
-        # Left pane / buttons
-        MDBoxLayout
-            orientation: 'vertical'
-
-            Spacer
-
-            # GMB Box
-            MDBoxLayout
-                orientation: 'vertical'
-
-                MDBoxLayout
-
-                    Widget
-
-                    WhitLbl
-                        text: '  GMB'
-                        halign: 'center'
-                        font_style: 'H6'
-                        text_color: .9,.9,.9
-
-                    Widget
-
-
-                MDBoxLayout
-                    Widget
-                        size_hint_x: 0.5
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-
-                        WhitLbl:
-                            text: "0600"
-                            text_color: 1, 0.941, 0
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0600", "stories/gb/0600/", "gb/gb_0600",'   [color=ffff00]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-
-                        WhitLbl:
-                            text: "0630"
-                            text_color: 1, 0.372, 0.121
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0630", "stories/gb/0630/", "gb/gb_0630", '   [color=ff5f1f]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-
-                        WhitLbl:
-                            text: "0700"
-                            text_color: 0, 1, 0
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0700", "stories/gb/0700/", "gb/gb_0700", '   [color=00ff00]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-
-                        WhitLbl:
-                            text: "0800"
-                            text_color: 0, 1, 1
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0800", "stories/gb/0800/", "gb/gb_0800", '   [color=00ffff]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-
-                        WhitLbl:
-                            text: "0900"
-                            text_color: 1, 0, 0.6
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*GMB-LK.*GMB.TX.0900", "stories/gb/0900/", "gb/gb_0900", '   [color=ff0099]')
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-                MDBoxLayout:
-                    size_hint_y: .3
-                    size_hint_x: None
-                    width: 80
-                    Label
-                        text: 'freq:'
-
-
-                    TextInput
-                        id: repeat_in_seconds_gb
-                        size_hint: None, None
-                        width: 45
-                        height: 30
-                        text: '30'
-                        background_color: .75, .75, .75
-
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-            Spacer
-
-            # LK Box
-            MDBoxLayout
-                orientation: 'vertical'
-                MDBoxLayout
-
-                    Widget
-
-                    WhitLbl
-                        text: '  LK'
-                        halign: 'center'
-                        font_style: 'H6'
-                        text_color: .9,.9,.9
-
-                    Widget
-
-                MDBoxLayout
-
-                    Widget
-                        size_hint_x: 1.9
-                    WhitLbl:
-                        text: "TX"
-                        text_color: 0, 1, 0
-                    Widget
-
-                MDBoxLayout:
-                    Widget
-                    MDSwitch:
-                        on_active: app.rundown_switch(self.active, "*GMB-LK.*LK.TX.LORRAINE", "stories/lk/tx/", "lk/lk_tx", '   [color=00ff00]')
-                    Widget
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-                MDBoxLayout:
-                    size_hint_y: .3
-                    size_hint_x: None
-                    width: 80
-                    Label
-                        text: 'freq:'
-
-
-                    TextInput
-                        id: repeat_in_seconds_lk
-                        size_hint: None, None
-                        width: 45
-                        height: 30
-                        text: '30'
-                        background_color: .75, .75, .75
-
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-            Spacer
-
-            # GMB Box
-            MDBoxLayout
-                orientation: 'vertical'
-
-                MDBoxLayout
-
-                    Widget
-                    WhitLbl
-                        text: '  TM'
-                        halign: 'center'
-                        font_style: 'H6'
-                        text_color: .9,.9,.9
-
-                    Widget
-
-                MDBoxLayout
-                    Widget
-                        size_hint_x: 0.5
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "MON"
-                            text_color: 1, 0.941, 0
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.MONDAY.RUNORDER", "stories/tm/mon/", "tm/tm_mon", '   [color=ffff00]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "TUE"
-                            text_color: 1, 0.372, 0.121
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.TUESDAY.RUNORDER", "stories/tm/tue/", "tm/tm_tue", '   [color=ff5f1f]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "WED"
-                            text_color: 0, 1, 0
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.WEDNESDAY.RUNORDER", "stories/tm/wed/", "tm/tm_wed", '   [color=00ff00]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "THU"
-                            text_color: 0, 1, 1
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.THURSDAY.RUNORDER", "stories/tm/thu/", "tm/tm_thu", '   [color=00ffff]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "FRI"
-                            text_color: 1, 0, 0.6
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*TM.*OUTPUT.RUNORDERS.FRIDAY.RUNORDER", "stories/tm/fri/", "tm/tm_fri", '   [color=ff0099]')
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-                MDBoxLayout:
-                    size_hint_y: .3
-                    size_hint_x: None
-                    width: 80
-                    Label
-                        text: 'freq:'
-
-
-                    TextInput
-                        id: repeat_in_seconds_tm
-                        size_hint: None, None
-                        width: 45
-                        height: 30
-                        text: '30'
-                        background_color: .75, .75, .75
-
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-            Spacer
-
-            # GMB Box
-            MDBoxLayout
-                orientation: 'vertical'
-
-                MDBoxLayout
-                    Widget
-                    WhitLbl
-                        text: '  LW'
-                        halign: 'center'
-                        font_style: 'H6'
-                        text_color: .9,.9,.9
-
-                    Widget
-
-                MDBoxLayout
-                    Widget
-                        size_hint_x: 0.5
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "MON"
-                            text_color: 1, 0.941, 0
-                        MDSwitch:
-
-                            on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.MONDAY", "stories/lw/mon/", "lw/lw_mon", '   [color=ffff00]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "TUE"
-                            text_color: 1, 0.372, 0.121
-                        MDSwitch:
-
-                            on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.TUESDAY", "stories/lw/tue/", "lw/lw_tue", '   [color=ff5f1f]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "WED"
-                            text_color: 0, 1, 0
-                        MDSwitch:
-
-                            on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.WEDNESDAY", "stories/lw/wed/", "lw/lw_wed", '   [color=00ff00]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "THU"
-                            text_color: 0, 1, 1
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.THURSDAY", "stories/lw/thu/", "lw/lw_thu", '   [color=00ffff]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "FRI"
-                            text_color: 1, 0, 0.6
-                        MDSwitch:
-
-                            on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.FRIDAY", "stories/lw/fri/", "lw/lw_fri", '   [color=ff0099]')
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-                MDBoxLayout:
-                    size_hint_y: .3
-                    size_hint_x: None
-                    width: 80
-                    Label
-                        text: 'freq:'
-
-
-                    TextInput
-                        id: repeat_in_seconds_lw
-                        size_hint: None, None
-                        width: 45
-                        height: 30
-                        text: '30'
-                        background_color: .75, .75, .75
-
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-            Spacer
-
-            # GMB Box
-            MDBoxLayout
-                orientation: 'vertical'
-
-                MDBoxLayout
-                    Widget
-
-                    WhitLbl
-                        text: 'CUSTOM'
-                        halign: 'center'
-                        font_style: 'H6'
-                        text_color: .9,.9,.9
-
-                    Widget
-
-                MDBoxLayout
-                    Widget
-                        size_hint_x: 0.5
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "C_1"
-                            text_color: 1, 0.941, 0
-                        MDSwitch:
-                            on_active: app.rundown_switch(self.active, "CTS.TX.TC2_LW", "stories/cs/", "cs/cs", '   [color=ffff00]')
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "C_2"
-                            text_color: 1, 0.372, 0.121
-                        MDSwitch:
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "C_3"
-                            text_color: 0, 1, 0
-                        MDSwitch:
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "C_4"
-                            text_color: 0, 1, 1
-                        MDSwitch:
-
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        WhitLbl:
-                            text: "CLR"
-                            text_color: 1, 0, 0.6
-                        MDSwitch:
-                            on_active: console_gb.text = ''
-                            on_active: console_lk.text = ''
-                            on_active: console_tm.text = ''
-                            on_active: console_lw.text = ''
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-                MDBoxLayout:
-                    size_hint_y: .3
-                    size_hint_x: None
-                    width: 80
-                    Label
-                        text: 'freq:'
-
-
-                    TextInput
-                        id: repeat_in_seconds_cs
-                        size_hint: None, None
-                        width: 45
-                        height: 30
-                        text: '30'
-                        background_color: .75, .75, .75
-
-
-                Widget
-                    size_hint_y: None
-                    height: 8
-
-            Spacer
-
-        # Automate, centre column
-        MDBoxLayout:
-            orientation: 'vertical'
-            Automate
-                id: auto_gb
-                tag: 'gb'
-            Automate
-                id: auto_lk
-                tag: 'lk'
-            Automate
-                id: auto_tm
-                tag: 'tm'
-            Automate
-                id: auto_lw
-                tag: 'lw'
-            Automate
-                id: auto_cs
-            Spacer
-
-
-        # Right pane / console
-        MDBoxLayout
-            orientation: 'vertical'
-            Spacer
-            ConsoleWindow
-                id: console_gb
-            Spacer
-            ConsoleWindow
-                id: console_lk
-            Spacer
-            ConsoleWindow
-                id: console_tm
-            Spacer
-            ConsoleWindow
-                id: console_lw
-            Spacer
-            ConsoleWindow
-                id: console_cs
-            Spacer
+        Color:
+            rgb: .6,.6,.6
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
