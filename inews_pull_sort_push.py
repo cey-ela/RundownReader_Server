@@ -6,6 +6,7 @@ import os
 import glob
 import time
 import ftplib as ftp
+from bs4 import BeautifulSoup
 from func_timeout import func_timeout, FunctionTimedOut
 from kivy.clock import Clock
 from email_notification import EmailNotify
@@ -49,12 +50,12 @@ class InewsPullSortPush:
         except (FunctionTimedOut, TimeoutError, OSError) as e:
             # Broad range of Timeout Errors to catch conn issues
             self.app.console_log(export_path, color + ' Connection error - see Python Terminal[/color]')
-            print(str(datetime.datetime.now()) + ' - Exception:\n' + str(e) + '\n')
+            print(str(datetime.datetime.now())[:19] + ' ~ Exception:\n' + str(e) + '\n')
             self.error_count += 1
 
             if self.error_count <= self.error_limit:
                 self.app.inews_disconnect(local_dir, export_path, color)
-                print(str(datetime.datetime.now()) + 'Retrying in 15 seconds. Attempt ' +
+                print(str(datetime.datetime.now())[:19] + ' ~ Retrying in 15 seconds. Attempt ' +
                       str(self.error_count) + '/5...\n')
                 time.sleep(15)
                 self.app.inews_connect(local_dir, export_path, color)
@@ -275,52 +276,59 @@ class InewsPullSortPush:
                 story_dict = {}
 
                 # We only want the data between XML stages <fields> and </fields>. Copy is set to false outside of that
-                copy = False
+                copy_fields = False
+                copy_body = False
 
                 # Loop through each line in the XML story file and extract necessary info into dict
                 for line in story_file:
+                    line = (line.decode()).strip()
                     # Checks if 'float' is in 'meta' line of story at the top of the file. Plus it decodes line from
                     # bytes and strips off any new line characters that may be present
                     # TODO: refactor these float and break keys to not have elif/False outcomes
-                    if "float" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
+                    if "float" in line and "<meta" in line:
                         # If True it adds 'floated' key to 'storyLine' dictionary and sets its value it value to True
                         break_out_flag = True
                         break
 
                     # Check if 'break' is in 'meta' line of story.
-                    if "break" in (line.decode()).strip() and "<meta" in (line.decode()).strip():
+                    if "break" in line and "<meta" in line:
                         story_dict["brk"] = True
                         # OMIT?
-                    elif "break" not in (line.decode()).strip() and "<meta" in (line.decode()).strip():
+                    elif "break" not in line and "<meta" in line:
                         # False if not
                         story_dict["brk"] = False
 
                     # Extract the first part of story id to be used as a unique ID in the app
-                    if "<storyid>" in (line.decode()).strip():
-                        result = re.search('<storyid>(.*)</storyid>', (line.decode()).strip())
+                    if "<storyid>" in line:
+                        result = re.search('<storyid>(.*)</storyid>', line)
                         sep = ':'
                         stripped = result.group(1).split(sep, 1)[0]
 
                         story_dict["story_id"] = stripped
 
-                    if (line.decode()).strip() == "<fields>":
-                        # If found, copy = True. Copy controls whats added to the storyLine dictionary. In this case
+                    if line == "<fields>":
+                        # If found, copy_fields = True. Copy controls whats added to the storyLine dictionary. In this case
                         # Everything between "<fields>", line by line until we reach "</fields>"
-                        copy = True
-                        # OMIT?
+                        copy_fields = True
                         continue
 
+                    elif line == "</fields>":
+                        copy_fields = False
+                        continue
 
-                    #  or (line.decode()).strip() == "</body>":
-                    elif (line.decode()).strip() == "</fields>":
-                        copy = False
+                    elif line == "<body>":
+                        copy_body = True
+                        continue
+
+                    elif line == "</body>":
+                        copy_body = False
                         continue
 
                     # Depending on what is decided above, the line is cleaned and copied - or ignored
-                    if copy:
+                    if copy_fields:
 
                         # Decode line from bytes and strips off any new line characters
-                        decoded_line = (line.decode()).strip()
+                        decoded_line = line
 
                         # New variable which is a regular expression used to pull ID & data from decoded_line.
                         # Simply put, it's making 2 groups. Group#1 is the string between 'id=' and '>', group#2 between
@@ -344,9 +352,15 @@ class InewsPullSortPush:
                             key = 'total'
 
                         story_dict['focus'] = False
+                        story_dict['body'] = ''
 
                         # Else write key and value as they are
                         story_dict[key] = value
+
+                    if copy_body:
+                        # body = BeautifulSoup(line)
+                        story_dict['body'] += BeautifulSoup(line, features="html.parser").text + '\n'
+
 
                 if not break_out_flag:
                     # Append story_dict to 'data' list
@@ -443,7 +457,7 @@ class InewsPullSortPush:
 
 
             try:
-                d.pop('back-time')  # rem
+                d.pop('back-time')
             except:
                 pass
 

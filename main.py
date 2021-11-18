@@ -19,6 +19,7 @@ from kivy import properties as kp
 from email_notification import EmailNotify
 
 
+
 class ConsoleApp(MDApp):
     """
     ..the epicenter...
@@ -38,8 +39,8 @@ class ConsoleApp(MDApp):
         self.email = EmailNotify()
 
         #x Retrieve iNews FTP credentials and IP from external source
-        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
+        #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
         self.ip = inews_details[1]['ip']
         self.passwd = inews_details[1]['passwd']
@@ -47,11 +48,13 @@ class ConsoleApp(MDApp):
 
         self.dow = datetime.today().strftime('%a').lower()  # Set Day Of the Week to be used by automation day switching
 
-        Clock.schedule_interval(self.activity_monitor, 61)
+        Clock.schedule_interval(self.activity_monitor, 61)  # Init separate method to make sure service is running
+
+        # Minutely Clock obj created to kick off when minutes reach either: 0,15,30,45
         self.init_log_aws_upload_schedule = Clock.schedule_interval(self.init_aws_log_upload, 60)
 
-        self.connection_limit = 5  # Limited amount of connections to server. Added security
-        self.connection_amount = 0
+        self.connection_limit = 5  # Limited amount of connections to server allowed in a 15 min window.
+        self.connection_amount = 0  # +=1 each new conn, reset on 15 min self.aws_log_upload()
 
         # interrogated when the countdown ends to see if the process should repeat
         self.manual_switches = {'gb': False,
@@ -70,6 +73,7 @@ class ConsoleApp(MDApp):
         with open('schedule.json') as sched:  # Amendable schedule saved in ext .json to survive app restarts
             self.schedule = json.load(sched)
 
+        # Cut any old lines > 3000 out before new App session begins
         with open('log.txt', 'r') as f_in:
             data = f_in.read().splitlines(True)
         with open('log.txt', 'w') as f_out:
@@ -100,19 +104,28 @@ class ConsoleApp(MDApp):
         # self.root.ids.main_screen.ids['lw_auto_switch'].active = True
 
     def init_aws_log_upload(self, dt=None):
+        """
+        Kicked of on App init. Run until it reaches a quarter of an hour then kicks off the AWS log upload for nice
+        even uniformed uploads
+        """
         current_minute = int(str(datetime.now())[14:16])
         if current_minute in [0, 15, 30, 45]:
-            self.init_log_aws_upload_schedule.cancel()
+            self.init_log_aws_upload_schedule.cancel()  # Cancel the minutely check
             Clock.schedule_interval(self.aws_log_upload, 900)
 
     def aws_log_upload(self, dt=None):
-        self.connection_amount = 0  # Hijack this 15 min periodical method to reset connection_caps
+        """
+        Send a shortened version of the log to AWS to have an accessible mobile update when away from the server
+        """
         with open('log.txt', 'r') as f_in:
             data = f_in.read().splitlines(True)
         with open('log_for_aws.txt', 'w') as f_out:
             f_out.writelines(data[-50:])
-        print('sending log to aws')
+
         upload_to_aws('log_for_aws.txt', 'rundowns', 'log.txt')
+
+        # -------------------- unrelated -------------------- #
+        self.connection_amount = 0  # Hijack this 15 min periodical method to reset connection_caps
 
     def activity_monitor(self, dt=None):
         """
@@ -134,7 +147,7 @@ class ConsoleApp(MDApp):
                     # the previous minute of 59 = -59
                     print('!!!!!!????? HAS A PROCESS FROZEN????!!!!!')
                     self.email.email_error_notification()
-                    # if this works send different tier email
+                    # if this works send different tier email MAKE SURE IT STOPS TOO!!!
 
     def update_schedule(self):
         """
@@ -211,7 +224,7 @@ class ConsoleApp(MDApp):
         else:  # If export_path != 'killall', close specific rundown conn
             self.ftp_sessions[prod].quit()
             print(str(datetime.now())[:19] + ' ~ Closing FTP connection for ' + prod.upper() + ': ' +
-                  str(self.ftp_sessions[prod]))
+                  str(self.ftp_sessions[prod]) + '\n')
             del self.ftp_sessions[prod]
             self.console_log(local_dir[8:], color + "Terminated. Closing FTP conn.[/color]")
 
@@ -279,7 +292,6 @@ class ConsoleApp(MDApp):
         establish how long the next countdown() should take and run it
         """
         if self.manual_switches[export_path[3:5]]:
-
             upload_to_aws('exports/pv/' + export_path + '.json', 'rundowns', 'pv/' + export_path)
             upload_to_aws('exports/sv/' + export_path + '.json', 'rundowns', 'sv/' + export_path)
 
