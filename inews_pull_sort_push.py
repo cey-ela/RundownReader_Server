@@ -13,7 +13,7 @@ from email_notification import EmailNotify
 
 class InewsPullSortPush:
     """
-    Pull it...sort it...push it...bop it!
+    Pull it...sort it...push it...bop it!!
     """
     app = None
 
