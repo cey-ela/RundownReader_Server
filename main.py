@@ -96,8 +96,8 @@ class ConsoleApp(MDApp):
         #         for input_box in prod:
         #             input_box.text = self.schedule[prod[-2:]][input_box]
 
-        self.root.ids.main_screen.ids['lk_auto_switch'].active = True
-        self.root.ids.main_screen.ids['lw_auto_switch'].active = True
+        # self.root.ids.main_screen.ids['lk_auto_switch'].active = True
+        # self.root.ids.main_screen.ids['lw_auto_switch'].active = True
 
     def init_aws_log_upload(self, dt=None):
         current_minute = int(str(datetime.now())[14:16])
@@ -389,7 +389,7 @@ class ConsoleApp(MDApp):
                 logfile.write(str(datetime.now())[:-7] + ' ' + filename[:2].upper() + ' ' + text[14:-8] + '\n')
 
         # Calculate how many lines should be displayed dependant on the height of the console window
-        console_height = (self.root.ids.main_screen.ids['console_' + filename[:2]].height / 17)
+        console_height = (self.root.ids.main_screen.ids['console_' + filename[:2]].height / 16)
 
         if len(log) > console_height:  # keep the log fewer than n rows
             log.pop(0)

@@ -58,7 +58,7 @@ class InewsPullSortPush:
                       str(self.error_count) + '/5...\n')
                 time.sleep(15)
                 self.app.inews_connect(local_dir, export_path, color)
-                time.sleep(1)
+
                 return self.init_process(inews_path, local_dir, export_path, color)  # Retry the process
 
             else:  # If error cap is reached. Gracefully shut down.
@@ -340,7 +340,7 @@ class InewsPullSortPush:
                         if 'page' in key:  # change key from 'page-number' to 'page'
                             key = 'page'
 
-                        if 'total' in key:  # change key from 'total-time' to 'time'
+                        if 'total' in key:  # change key from 'total-time' to 'total'
                             key = 'total'
 
                         story_dict['focus'] = False
@@ -391,7 +391,6 @@ class InewsPullSortPush:
         # current item will end and the next one begins
 
         for d in self.data:
-
             try:
                 # 'air-date' comes in as epoch. converted to str(HH:MM:SS) sliced in to hrs, min, secs and converted
                 # back to int to calculate seconds from midnight...
@@ -436,11 +435,12 @@ class InewsPullSortPush:
                 d['seconds'] = next_time  # use the previously forecast time as new
                 current_time = next_time  # ^
                 next_time += int(d['total'])  # new forecast for next time change
-
             else:
                 d['seconds'] = current_time  # if time values at all, send current_time
 
             d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))  # and update readable backtime
+
+
 
             try:
                 d.pop('back-time')  # rem
@@ -463,6 +463,10 @@ class InewsPullSortPush:
         m = 0.001 / 0.05
 
         for index, story_dict in enumerate(reversed(self.data)):
+            # Convert int total to MM:SS
+            int_seconds = time.gmtime(int(story_dict['total']))
+            story_dict['total'] = str(time.strftime("%M:%S", int_seconds))
+
             try:  # Catch occasional smaller dicts
                 if story_dict['page'][-2:] == '00' or story_dict['page'][-1:] == '.':
 
