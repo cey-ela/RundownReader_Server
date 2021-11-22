@@ -279,12 +279,16 @@ class InewsPullSortPush:
                 copy_fields = False
                 copy_body = False
 
+                story_dict['focus'] = False
+                story_dict['body'] = ''
+
                 # Loop through each line in the XML story file and extract necessary info into dict
                 for line in story_file:
                     line = (line.decode()).strip()
                     # Checks if 'float' is in 'meta' line of story at the top of the file. Plus it decodes line from
                     # bytes and strips off any new line characters that may be present
                     # TODO: refactor these float and break keys to not have elif/False outcomes
+
                     if "float" in line and "<meta" in line:
                         # If True it adds 'floated' key to 'storyLine' dictionary and sets its value it value to True
                         break_out_flag = True
@@ -350,9 +354,6 @@ class InewsPullSortPush:
 
                         if 'total' in key:  # change key from 'total-time' to 'total'
                             key = 'total'
-
-                        story_dict['focus'] = False
-                        story_dict['body'] = ''
 
                         # Else write key and value as they are
                         story_dict[key] = value
@@ -477,15 +478,17 @@ class InewsPullSortPush:
         m = 0.001 / 0.05
 
         for index, story_dict in enumerate(reversed(self.data)):
-            # Convert int total to MM:SS
-            int_seconds = time.gmtime(int(story_dict['total']))
-            story_dict['total'] = str(time.strftime("%M:%S", int_seconds))
+
 
             try:  # Catch occasional smaller dicts
+
+                # Convert int total to MM:SS
+                int_seconds = time.gmtime(int(story_dict['total']))
+                story_dict['total'] = str(time.strftime("%M:%S", int_seconds))
+
+
                 if story_dict['page'][-2:] == '00' or story_dict['page'][-1:] == '.':
-
                     pos = (index / len(self.data))
-
                     if 0.5 <= pos < 0.98:
                         offset = round(round(m * pos + b_pos, 10), 3)
                         pos += abs(offset)

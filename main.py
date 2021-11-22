@@ -39,8 +39,8 @@ class ConsoleApp(MDApp):
         self.email = EmailNotify()
 
         #x Retrieve iNews FTP credentials and IP from external source
-        #with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
-        with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
+        with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
+        #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
             inews_details = json.load(aws_creds)
         self.ip = inews_details[1]['ip']
         self.passwd = inews_details[1]['passwd']
@@ -146,6 +146,7 @@ class ConsoleApp(MDApp):
                 if difference not in [0, 1, -59]:  # -59 in list of acceptable differences because top of the hour minus
                     # the previous minute of 59 = -59
                     print('!!!!!!????? HAS A PROCESS FROZEN????!!!!!')
+                    # Change to email once - pass detailed param
                     self.email.email_error_notification()
                     # if this works send different tier email MAKE SURE IT STOPS TOO!!!
 
@@ -187,6 +188,7 @@ class ConsoleApp(MDApp):
         """
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
         self.connection_amount += 1
+        print(self.connection_amount)
         if self.connection_amount <= self.connection_limit:
             try:  # If session exists, quit
                 self.ftp_sessions[prod].quit()
