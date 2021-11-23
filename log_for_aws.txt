@@ -1,0 +1,50 @@
+2021-11-23 09:46:14 LK Repeating  process in 29
+2021-11-23 09:46:14 LW Repeating  process in 3648
+2021-11-23 09:46:15 LK Repeating  process in 28
+2021-11-23 09:46:15 LW Repeating  process in 3647
+2021-11-23 09:46:15 LK Terminated. Closing FTP conn.
+2021-11-23 09:46:15 LW Terminated. Closing FTP conn.
+2021-11-23 09:50:57 LW Opening new FTP connection.
+2021-11-23 09:50:57 LW Starting rundown download
+2021-11-23 09:50:57 LW Rundown empty. No upload
+2021-11-23 09:50:57 LW File identical. No upload.
+2021-11-23 09:51:00 LW Terminated. Closing FTP conn.
+2021-11-23 09:51:02 LW Opening new FTP connection.
+2021-11-23 09:51:02 LW Starting rundown download
+2021-11-23 09:51:08 LW Converting from NSML to dict
+2021-11-23 09:51:08 LW Calculating backtimes
+2021-11-23 09:51:08 LW Converting dict to json
+2021-11-23 09:51:09 LW Uploading json files to AWS
+2021-11-23 09:51:22 LW Terminated. Closing FTP conn.
+2021-11-23 09:52:11 LW Opening new FTP connection.
+2021-11-23 09:52:11 LW Starting rundown download
+2021-11-23 09:52:17 LW Converting from NSML to dict
+2021-11-23 09:52:17 LW Calculating backtimes
+2021-11-23 09:52:17 LW Converting dict to json
+2021-11-23 09:52:17 LW File identical. No upload.
+2021-11-23 09:52:17 LW Repeating  process in 10
+2021-11-23 09:52:18 LW Repeating  process in 9
+2021-11-23 09:52:19 LW Repeating  process in 8
+2021-11-23 09:52:20 LW Repeating  process in 7
+2021-11-23 09:52:20 LW Terminated. Closing FTP conn.
+2021-11-23 10:28:12 LK Opening new FTP connection.
+2021-11-23 10:28:12 LK Starting rundown download
+2021-11-23 10:28:12 LW Opening new FTP connection.
+2021-11-23 10:28:12 LK Rundown empty. No upload
+2021-11-23 10:28:12 LK File identical. No upload.
+2021-11-23 10:28:12 LW Starting rundown download
+2021-11-23 10:28:12 LK Repeating  process in 2999
+2021-11-23 10:28:13 LK Repeating  process in 2998
+2021-11-23 10:28:14 LK Repeating  process in 2997
+2021-11-23 10:28:15 LK Repeating  process in 2996
+2021-11-23 10:28:16 LK Repeating  process in 2995
+2021-11-23 10:28:17 LK Repeating  process in 2994
+2021-11-23 10:28:17 LK Terminated. Closing FTP conn.
+2021-11-23 10:28:19 LW Converting from NSML to dict
+2021-11-23 10:28:19 LW Calculating backtimes
+2021-11-23 10:28:19 LW Converting dict to json
+2021-11-23 10:28:19 LW Uploading json files to AWS
+2021-11-23 10:28:19 LW Repeating  process in 299
+2021-11-23 10:28:20 LW Repeating  process in 298
+2021-11-23 10:28:21 LW Repeating  process in 297
+2021-11-23 10:28:22 LW Terminated. Closing FTP conn.

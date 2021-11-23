@@ -36,21 +36,20 @@ class InewsPullSortPush:
 
         self.app.console_log(export_path, color + 'Starting rundown download[/color]')
 
-
         # 1ST METHOD: Retrieve XML data from iNews via FTP
         try:  # Kick off the iNews data pull via a special func_timeout method: If n seconds are exceeded
             # FunctionTimedOut exception is raised
             func_timeout(45, self.pull_xml_via_ftp, args=(inews_path, local_dir, export_path, color))
 
         except FileNotFoundError:  # Rundown is empty, early exit/return back to main countdown/repeat
-            print(str(datetime.datetime.now()) + 'Rundown empty - Skipping AWS push')
+            print(str(datetime.datetime.now())[:19] + ' ~ Rundown empty - Skipping AWS push')
             self.app.console_log(export_path, color + 'Rundown empty. No upload[/color]')
             return
 
         except (FunctionTimedOut, TimeoutError, OSError) as e:
             # Broad range of Timeout Errors to catch conn issues
             self.app.console_log(export_path, color + ' Connection error - see Python Terminal[/color]')
-            print(str(datetime.datetime.now())[:19] + ' ~ Exception:\n' + str(e) + '\n')
+            print(str(datetime.datetime.now())[:19] + ' ~ Exception:\n' + str(e))
             self.error_count += 1
 
             if self.error_count <= self.error_limit:
@@ -63,7 +62,8 @@ class InewsPullSortPush:
                 return self.init_process(inews_path, local_dir, export_path, color)  # Retry the process
 
             else:  # If error cap is reached. Gracefully shut down.
-                self.email.email_error_notification()
+                self.email.email_error_notification('Error cap of 5 has been exceeded. Shutting down. \n'
+                                                    'Please investigate and restart software when ready.')
                 self.app.console_log(export_path,
                                      color + 'Error limit reached. Processes stopped. See terminal[/color]')
                 print('Error cap of 5 has been exceeded. Shutting down. \n'
@@ -83,8 +83,6 @@ class InewsPullSortPush:
         #     self.app.console_log(export_path, color + ' iNews error, see terminal for info[/color]')
         #     time.sleep(15)
         #     self.app.inews_connect(local_dir, export_path, color)
-
-
 
         if self.error_count < self.error_limit:
 
@@ -133,7 +131,7 @@ class InewsPullSortPush:
                     ftp_sesh.retrbinary("RETR " + story_id_title, new_story_file.write)
                     # new_story_file.close()
 
-            except (ftp.error_perm,EOFError, AttributeError):  # Permanent error - all actions will have to cease and
+            except (ftp.error_perm, EOFError, AttributeError):  # Permanent error - all actions will have to cease and
                 # the ftp conn reestablished. Raises vague but final error_perm exception
                 # new_story_file.close()
                 continue
@@ -362,7 +360,6 @@ class InewsPullSortPush:
                         # body = BeautifulSoup(line)
                         story_dict['body'] += BeautifulSoup(line, features="html.parser").text + '\n'
 
-
                 if not break_out_flag:
                     # Append story_dict to 'data' list
                     self.data.append(story_dict)
@@ -455,8 +452,6 @@ class InewsPullSortPush:
 
             d['backtime'] = str(datetime.timedelta(seconds=d['seconds']))  # and update readable backtime
 
-
-
             try:
                 d.pop('back-time')
             except:
@@ -479,13 +474,11 @@ class InewsPullSortPush:
 
         for index, story_dict in enumerate(reversed(self.data)):
 
-
             try:  # Catch occasional smaller dicts
 
                 # Convert int total to MM:SS
                 int_seconds = time.gmtime(int(story_dict['total']))
                 story_dict['total'] = str(time.strftime("%M:%S", int_seconds))
-
 
                 if story_dict['page'][-2:] == '00' or story_dict['page'][-1:] == '.':
                     pos = (index / len(self.data))
@@ -511,7 +504,7 @@ class InewsPullSortPush:
                 "story_id": "over",
                 "seconds": 0,
                 "backtime": '23:30:00',
-                "total":"0",
+                "total": "0",
                 "focus": False,
                 "title": " ~ end of show ~ "
             }, )

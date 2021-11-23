@@ -55,8 +55,16 @@ ScreenManager:
                         pos: (self.center_x / 4), self.y + 10
                         source: 'assets/title.png'
 
-
-
+            MDBoxLayout
+                size_hint_x: .2
+                MDLabel:
+                    text: 'AUTO:'
+                    theme_text_color: 'Custom'
+                    text_color: 0,1,0
+                MDSwitch:
+                    id: auto_switch
+                    on_active: lk_auto_switch.active = self.active
+                    on_active: lw_auto_switch.active = self.active
 
             MDIconButton
                 theme_text_color: 'Custom'
@@ -66,6 +74,7 @@ ScreenManager:
                 pos_hint: {"center_x": .5, "center_y": .5}
                 size_hint_x: None
                 width: 50
+                on_press: app.root.current = 'settings_screen'
 
 
 
@@ -216,7 +225,7 @@ ScreenManager:
                             MDSwitch:
                                 id: lk_auto_switch
                                 on_active: lk_tx_switch.active = self.active
-
+                                on_active: app.automation_switches['lk'] = self.active
                             Widget
                                 size_hint_x: .4
 
@@ -236,7 +245,6 @@ ScreenManager:
 
                             MDSwitch:
                                 id: lk_tx_switch
-                                on_active: app.automation_switches['lk'] = self.active
                                 on_active: app.rundown_switch(self.active, "*GMB-LK.*LK.TX.LORRAINE", "stories/lk/tx/", "lk/lk_tx", '[color=00ff00]')
                             Widget
                                 size_hint_x: .4
@@ -393,7 +401,7 @@ ScreenManager:
                                 text_color: 1, 1, 1
                             MDSwitch:
                                 id: lw_auto_switch
-                                on_active: app.automate(self.active, 'lw_')
+                                on_active: app.automate(self.active, 'lw')
                                 on_active: app.automation_switches['lw'] = self.active
                             Widget
                                 size_hint_x: .4
@@ -407,7 +415,9 @@ ScreenManager:
                                 text_color: 1, 0.941, 0
                             MDSwitch:
                                 id: lw_mon_switch
+                                on_active: app.turn_off_old_switches(self.active, [lw_tue_switch, lw_wed_switch, lw_thu_switch, lw_fri_switch])
                                 on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.MONDAY", "stories/lw/mon/", "lw/lw_mon", '[color=ffff00]')
+
                             Widget
                                 size_hint_x: .4
 
@@ -420,6 +430,7 @@ ScreenManager:
                                 text_color: 1, 0.372, 0.121
                             MDSwitch:
                                 id: lw_tue_switch
+                                on_active: app.turn_off_old_switches(self.active, [lw_mon_switch, lw_wed_switch, lw_thu_switch, lw_fri_switch])
                                 on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.TUESDAY", "stories/lw/tue/", "lw/lw_tue", '[color=ff5f1f]')
                             Widget
                                 size_hint_x: .4
@@ -433,6 +444,7 @@ ScreenManager:
                                 text_color: 0, 1, 0
                             MDSwitch:
                                 id: lw_wed_switch
+                                on_active: app.turn_off_old_switches(self.active, [lw_mon_switch, lw_tue_switch, lw_thu_switch, lw_fri_switch])
                                 on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.WEDNESDAY", "stories/lw/wed/", "lw/lw_wed", '[color=00ff00]')
                             Widget:
                                 size_hint_x: .4
@@ -446,6 +458,7 @@ ScreenManager:
                                 text_color: 0, 1, 1
                             MDSwitch:
                                 id: lw_thu_switch
+                                on_active: app.turn_off_old_switches(self.active, [lw_mon_switch, lw_tue_switch, lw_wed_switch, lw_fri_switch])
                                 on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.THURSDAY", "stories/lw/thu/", "lw/lw_thu", '[color=00ffff]')
                             Widget:
                                 size_hint_x: .4
@@ -459,6 +472,7 @@ ScreenManager:
                                 text_color: 1, 0, 0.6
                             MDSwitch:
                                 id: lw_fri_switch
+                                on_active: app.turn_off_old_switches(self.active, [lw_mon_switch, lw_tue_switch, lw_wed_switch, lw_thu_switch])
                                 on_active: app.rundown_switch(self.active, "*LW.RUNORDERS.FRIDAY", "stories/lw/fri/", "lw/lw_fri", '[color=ff0099]')
                             Widget:
                                 size_hint_x: .4
@@ -575,25 +589,149 @@ ScreenManager:
                 Spacer
 
 
+<TabCustom@MDTabsBase+MDBoxLayout>
+
+
 <SettingsScreen@Screen>:
-    # Automate, centre column APP.UPDATE_SCHEDULE
-    MDBoxLayout:
+# Background
+    BoxLayout:
         orientation: 'vertical'
-        Automate
-            id: auto_gb
-            tag: 'gb'
-        Automate
-            id: auto_lk
-            tag: 'lk'
-        Automate
-            id: auto_tm
-            tag: 'tm'
-        Automate
-            id: auto_lw
-            tag: 'lw'
-        Automate
-            id: auto_cs
-        Spacer
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'assets/bg.png'
+
+
+        MDBoxLayout
+            size_hint_y: None
+            height: 100
+
+            canvas.before:
+                Color:
+                    rgba: 0,0,0,1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+                Color:
+                    rgb: 1,1,1
+                Line:
+                    width: 5
+                    rectangle: self.x, self.y, self.width, self.height
+            Widget
+                canvas.before:
+                    Rectangle:
+                        size: 80, 80
+                        pos: self.x + 12, self.y + 12
+                        source: 'assets/icon.png'
+
+            Widget
+                size_hint_x: .1
+
+            Widget
+                canvas.before:
+                    Rectangle:
+                        size: 800, 80
+                        pos: (self.center_x / 4), self.y + 10
+                        source: 'assets/title.png'
+
+
+            MDIconButton
+                theme_text_color: 'Custom'
+                icon: 'arrow-left-bold-outline'
+                text_color: 0, 1, 0
+                user_font_size: 32.5
+                pos_hint: {"center_x": .5, "center_y": .5}
+                size_hint_x: None
+                width: 50
+                on_press: app.root.current = 'main_screen'
+
+        Label:
+            text: 'Settings'
+            font_size: 50
+#            halign: 'center'
+            size_hint_y: .15
+
+        MDBoxLayout
+            orientation: 'vertical'
+            size_hint: .5, .5
+
+            MDBoxLayout:
+                Label:
+                    text: 'Automate on load'
+                MDSwitch
+                    id: on_load
+                    on_active: app.update_settings(self.active)
+                Widget
+            MDBoxLayout
+                size_hint_y: .4
+                Label:
+                    text: 'Default countdown timer'
+                    valign: 'center'
+                TextInput:
+                    id: default_frequency
+                    text: '30'
+                    size_hint: .2, .2
+                    valign: 'center'
+                    write_tab: False
+                    padding: [0,3,0,0]
+
+                Widget
+
+
+        MDTabs
+            background_color: 0,0,0,0
+            TabCustom
+                title: 'GMB'
+                Automate
+                    id: auto_gb
+                    tag: 'gb'
+            TabCustom
+                title: 'LK'
+                Automate
+                    id: auto_lk
+                    tag: 'lk'
+            TabCustom
+                title: 'TM'
+                Automate
+                    id: auto_tm
+                    tag: 'tm'
+            TabCustom
+                title: 'LW'
+                Automate
+                    id: auto_lw
+                    tag: 'lw'
+            TabCustom
+                title: 'CS'
+                Automate
+                    id: auto_cs
+
+        Button:
+            text: 'UPDATE'
+            size_hint_y: .2
+            background_normal: ""
+            background_color: 1,1,1,0.2
+            on_press: app.update_schedule()
+
+
+#    # Automate, centre column APP.UPDATE_SCHEDULE
+#    MDBoxLayout:
+#        orientation: 'vertical'
+#        Automate
+#            id: auto_gb
+#            tag: 'gb'
+#        Automate
+#            id: auto_lk
+#            tag: 'lk'
+#        Automate
+#            id: auto_tm
+#            tag: 'tm'
+#        Automate
+#            id: auto_lw
+#            tag: 'lw'
+#        Automate
+#            id: auto_cs
+#        Spacer
 
 
 <AutoTI>
@@ -604,6 +742,7 @@ ScreenManager:
     write_tab: False
     padding: [0,3,0,0]
 
+
 <AutoTIFreq@TextInput>
     multiline: False
     font_size: 12.8
@@ -611,6 +750,7 @@ ScreenManager:
 
     write_tab: False
     padding: [0,3,0,0]
+
 
 
 <Automate@MDBoxLayout>
@@ -624,32 +764,29 @@ ScreenManager:
 
     Spacer
     Widget
-    MDBoxLayout
-        Widget
-        MDSwitch
-            on_active: app.automation_switches[root.tag] = self.active
-        Widget
+
+
 
     MDBoxLayout
         Label:
             text: '1:'
         AutoTI
             id: start_one
-            text: 'start'
+            text: 'x'
 #            on_text: app.automation[root.tag][0]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_one
-            text: 'finish'
+            text: 'x'
 #            on_text: app.automation[root.tag][0]['finish'] = self.text
         Label
             text: 'freq'
 
         AutoTIFreq
             id: freq_one
-            text: '300'
+            text: 'x'
 #            on_text: app.automation[root.tag][0]['freq'] = self.text
 
         Widget
@@ -661,20 +798,20 @@ ScreenManager:
             text: '2:'
         AutoTI
             id: start_two
-            text: 'start'
+            text: 'x'
 #            on_text: app.automation[root.tag][1]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_two
-            text: 'finish'
+            text: 'x'
 #            on_text: app.automation[root.tag][1]['finish'] = self.text
         Label
             text: 'freq'
         AutoTIFreq
             id: freq_two
-            text: '300'
+            text: 'x'
 #            on_text: app.automation[root.tag][1]['freq'] = self.text
         Widget
             size_hint_x: .1
@@ -685,20 +822,20 @@ ScreenManager:
             text: '3:'
         AutoTI
             id: start_three
-            text: 'start'
+            text: 'x'
 #            on_text: app.automation[root.tag][2]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_three
-            text: 'finish'
+            text: 'x'
 #            on_text: app.automation[root.tag][2]['finish'] = self.text
         Label
             text: 'freq'
         AutoTIFreq
             id: freq_three
-            text: '300'
+            text: 'x'
 #            on_text: app.automation[root.tag][2]['freq'] = self.text
         Widget
             size_hint_x: .1
@@ -709,20 +846,20 @@ ScreenManager:
             text: '4:'
         AutoTI
             id: start_four
-            text: 'start'
+            text: 'x'
 #            on_text: app.automation[root.tag][3]['start'] = self.text
         Label:
             size_hint_x: .21
             text: '-'
         AutoTI
             id: finish_four
-            text: 'finish'
+            text: 'x'
 #            on_text: app.automation[root.tag][3]['finish'] = self.text
         Label
             text: 'freq'
         AutoTIFreq
             id: freq_four
-            text: '300'
+            text: 'x'
 #            on_text: app.automation[root.tag][3]['freq'] = self.text
 #            on_text: print(app.automation)
 #            on_text: prSwint(app.automation)

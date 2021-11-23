@@ -8,6 +8,7 @@ import time
 from threading import Thread
 from kivymd.app import MDApp
 from kivy.clock import Clock
+from kivy.uix import screenmanager as sm
 from s3_connection import upload_to_aws
 from datetime import datetime
 from ftplib import FTP
@@ -17,6 +18,7 @@ from kivy.uix.textinput import TextInput
 import json
 from kivy import properties as kp
 from email_notification import EmailNotify
+
 
 
 
@@ -38,6 +40,7 @@ class ConsoleApp(MDApp):
         super().__init__()
         self.email = EmailNotify()
 
+
         #x Retrieve iNews FTP credentials and IP from external source
         with open("C:\\Program Files\\RundownReader_Server\\xyz\\aws_creds.json") as aws_creds:
         #with open("/Users/joseedwa/PycharmProjects/xyz/aws_creds.json") as aws_creds:  # Move these credentials
@@ -48,7 +51,8 @@ class ConsoleApp(MDApp):
 
         self.dow = datetime.today().strftime('%a').lower()  # Set Day Of the Week to be used by automation day switching
 
-        Clock.schedule_interval(self.activity_monitor, 61)  # Init separate method to make sure service is running
+        # Init separate method to make sure service is running
+        self.activity_monitor_schedule = Clock.schedule_interval(self.activity_monitor, 61)
 
         # Minutely Clock obj created to kick off when minutes reach either: 0,15,30,45
         self.init_log_aws_upload_schedule = Clock.schedule_interval(self.init_aws_log_upload, 60)
@@ -73,6 +77,9 @@ class ConsoleApp(MDApp):
         with open('schedule.json') as sched:  # Amendable schedule saved in ext .json to survive app restarts
             self.schedule = json.load(sched)
 
+        with open('settings.json') as settings:
+            self.settings = json.load(settings)
+
         # Cut any old lines > 3000 out before new App session begins
         with open('log.txt', 'r') as f_in:
             data = f_in.read().splitlines(True)
@@ -89,19 +96,20 @@ class ConsoleApp(MDApp):
         """
         Called as the .kv elements are being constructed, post init()
         """
+        self.root.transition = sm.NoTransition()
         self.title = 'RRS'
         InewsPullSortPush.app = self  # how alternate .py files communicate back to the main App class
 
         # Populate each automation schedule input box. The boxes follow the same layout as schedule.json so both
         # can be 'zipped' through concurrently, correctly transferring data between the two locations
+        for prod in self.root.ids.settings_screen.ids:
+            if 'auto' in prod:
+                for input_box in self.root.ids.settings_screen.ids[prod].ids:
+                    self.root.ids.settings_screen.ids[prod].ids[input_box].text = self.schedule[prod[-2:]][input_box]
 
-        # for prod in self.root.ids.settings_screen.ids:
-        #     if 'auto' in prod:
-        #         for input_box in prod:
-        #             input_box.text = self.schedule[prod[-2:]][input_box]
 
-        # self.root.ids.main_screen.ids['lk_auto_switch'].active = True
-        # self.root.ids.main_screen.ids['lw_auto_switch'].active = True
+        self.root.ids.main_screen.ids.auto_switch.active = self.settings['automate_on_load']
+        self.root.ids.settings_screen.ids.on_load.active = self.settings['automate_on_load']
 
     def init_aws_log_upload(self, dt=None):
         """
@@ -145,22 +153,22 @@ class ConsoleApp(MDApp):
 
                 if difference not in [0, 1, -59]:  # -59 in list of acceptable differences because top of the hour minus
                     # the previous minute of 59 = -59
-                    print('!!!!!!????? HAS A PROCESS FROZEN????!!!!!')
-                    # Change to email once - pass detailed param
-                    self.email.email_error_notification()
-                    # if this works send different tier email MAKE SURE IT STOPS TOO!!!
+                    self.email.email_error_notification('A process has frozen. Investigate and restart software')
+                    self.activity_monitor_schedule.cancel()
 
     def update_schedule(self):
         """
         Precise reverse of the last loop in build(). schedule.json updated when the schedule is manually changed
         """
-        for prod in self.root.ids:
+
+        for prod in self.root.ids.settings_screen.ids:
             if 'auto' in prod:
-                for input_box in self.root.ids[prod].ids:
-                    self.schedule[prod[-2:]][input_box] = self.root.ids[prod].ids[input_box].text
+                for input_box in self.root.ids.settings_screen.ids[prod].ids:
+                    self.schedule[prod[-2:]][input_box] = self.root.ids.settings_screen.ids[prod].ids[input_box].text
 
         with open('schedule.json', 'w') as f:
             f.write(json.dumps(self.schedule, indent=4))
+
 
     def automate(self, activity, prod):
         """
@@ -169,11 +177,11 @@ class ConsoleApp(MDApp):
         :param prod: 'gb', 'lk', etc
         :return:
         """
+
         try:
-            self.root.ids.main_screen.ids[prod + self.dow + '_switch'].active = activity
-        except KeyError:
-            print('its the weekend yall')
-            self.root.ids.main_screen.ids[prod + '_fri_switch'].active = activity
+            self.root.ids.main_screen.ids[prod + '_' + self.dow + '_switch'].active = activity
+        except KeyError as e:
+            print(e)
 
     def inews_connect(self, local_dir, export_path, color):
         """
@@ -188,7 +196,6 @@ class ConsoleApp(MDApp):
         """
         prod = export_path[3:5]  # = gb / lk / tm / lw / cs
         self.connection_amount += 1
-        print(self.connection_amount)
         if self.connection_amount <= self.connection_limit:
             try:  # If session exists, quit
                 self.ftp_sessions[prod].quit()
@@ -201,14 +208,14 @@ class ConsoleApp(MDApp):
                 self.ftp_sessions[prod].login(user=self.user, passwd=self.passwd)  # Login to FTP
                 self.console_log(local_dir[8:], color + "Opening new FTP connection.[/color]")
                 print(str(datetime.now())[:19] + ' ~ Opening new FTP connection for ' + prod.upper() + ': ' +
-                      str(self.ftp_sessions[prod]))
+                      str(self.ftp_sessions[prod]) + '\n')
             except OSError:  # Handles network disconnect error
                 print(str(datetime.now()) + 'Network is unreachable. Check internet connection')
                 return self.console_log(local_dir[8:], color + "Network is unreachable. Check internet connection")
         else:
             self.console_log(local_dir[8:], color + "Conn limit reached. Restart software.[/color]")
             print(str(datetime.now())[:19] + ' ~ 5/5 connections per 15 min exceeded. Wait 15 min or restart software')
-            self.email.email_error_notification()
+            self.email.email_error_notification('5/5 connections per 15 min exceeded. Wait 15 min or restart software')
             self.root.ids.main_screen.ids[prod + '_auto_switch'].active = False
 
     def inews_disconnect(self, local_dir, export_path, color):
@@ -245,11 +252,11 @@ class ConsoleApp(MDApp):
         self.manual_switches[prod] = switch  # Update dict used at the end of the countdown repeat - yes/no
 
         if switch:  # If value from the switch being toggled is True/active/on
-            self.inews_connect(local_dir, export_path, color)
-            self.collect_rundown_thread(rundown, local_dir, export_path, color)  # Begin next step on new thread
-
+            self.inews_connect(local_dir, export_path, color)#################!!!!!!!!!!!!!
+            if self.connection_amount <= self.connection_limit:
+                self.collect_rundown_thread(rundown, local_dir, export_path, color)  # Begin next step on new thread
         else:  # If switch is turned off. Close FTP conn gracefully and remove it from the ftp_sessions dict
-            self.inews_disconnect(local_dir, export_path, color)
+            self.inews_disconnect(local_dir, export_path, color) ###########!!!!!!!!!!!!!!!
             self.root.ids.main_screen.ids[prod + '_auto_switch'].active = False
 
     def collect_rundown_thread(self, rundown, local_dir, export_path, color):
@@ -287,6 +294,7 @@ class ConsoleApp(MDApp):
             t = Thread(target=self.push_to_aws, args=(rundown, local_dir, export_path, color))
             t.daemon = False
             t.start()
+
 
     def push_to_aws(self, rundown, local_dir, export_path, color):
         """
@@ -332,7 +340,7 @@ class ConsoleApp(MDApp):
 
         else:
             # If automate switch is off, return default
-            return 30  # move this to options eventually
+            return int(self.root.ids.settings_screen.ids.default_frequency.text)
 
     def countdown(self, duration, rundown, local_dir, export_path, color):
         """
@@ -359,24 +367,47 @@ class ConsoleApp(MDApp):
         :param current_dow: get dow in shortened string, e.g. 'mon', 'thu'
         """
         prod = export_path[3:5]
-        current_dow = datetime.today().strftime('%a').lower()
+        # current_dow = datetime.today().strftime('%a').lower()
+        current_dow = 'wed'
 
-        if prod == 'lk':  # LK doesn't adhere to DOW rules, break out early
+        if current_dow == 'sat' or current_dow == 'sun':  # If weekend, check every hour for change until 'mon'
+            return self.weekend_mode(prod, local_dir, color)
+
+        if prod == 'lk' or self.dow == current_dow:  # LK doesn't adhere to DOW rules, or day unchanged - proceed
             return self.collect_rundown_thread(rundown, local_dir, export_path, color)
-
-        if self.dow == current_dow:  # If the day has not changed since the last pull, repeat as normal
-            return self.collect_rundown_thread(rundown, local_dir, export_path, color)
-
-        elif current_dow == 'sat' or current_dow == 'sun':  # If weekend, check every hour for change until 'mon'
-            time.sleep(3600)
-            return self.check_dow_and_proceed(rundown, local_dir, export_path, color)
 
         else:  # If the hour has passed midnight and entered a new day since the last pull
-            self.root.ids.main_screen.ids[prod + '_' + self.dow + '_switch'].active = False  # Turn off yesterday switch
+            # self.root.ids.main_screen.ids[prod + '_' + self.dow + '_switch'].active = False  # Turn off yesterday switch
+            self.root.ids.main_screen.ids[prod + '_auto_switch'].active = False
+            self.dow = current_dow  # Update Day Of Week
+            self.root.ids.main_screen.ids[prod + '_auto_switch'].active = True  # Re-trigger the auto switch to proceed
+
+    def weekend_mode(self, prod, local_dir, color):
+        self.console_log(local_dir[8:], color + "Weekend mode. Waiting for Monday...[/color]")
+
+        self.root.ids.main_screen.ids['lk_tx_switch'].active = False
+        self.root.ids.main_screen.ids['lw_fri_switch'].active = False
+
+        self.root.ids.main_screen.ids[prod + '_auto_switch'].active = True
+
+        self.monday_checker = Clock.schedule_interval(self.check_for_monday(prod), 10)
+
+
+    def check_for_monday(self, prod, dt=None):
+        current_dow = datetime.today().strftime('%a').lower()
+        print('waiting for monday')
+        if current_dow == 'mon':
+            self.monday_checker.cancel()
+            self.root.ids.main_screen.ids[prod + '_auto_switch'].active = False
             self.dow = current_dow  # Update Day Of Week
             self.root.ids.main_screen.ids[prod + '_auto_switch'].active = True  # Re-trigger the auto switch to proceed
 
 
+    def turn_off_old_switches(self, active, switches):
+        """Only one DOW switch can be activate at a time. This method makes sure of that """
+        if active:
+            for s in switches:
+                s.active = False
 
     def console_log(self, filename, text):
         """
@@ -412,6 +443,14 @@ class ConsoleApp(MDApp):
             message += i + '\n'
 
         self.root.ids.main_screen.ids['console_' + filename[:2]].text = message  # update console
+
+    def update_settings(self, active):
+        self.settings['automate_on_load'] = active
+
+        with open('settings.json', 'w') as s:
+            s.write(json.dumps(self.settings, indent=4))
+
+
 
     def on_stop(self):
         """
