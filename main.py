@@ -25,9 +25,7 @@ from email_notification import EmailNotify
 class ConsoleApp(MDApp):
     """
     ..the epicenter...
-    Be mindful to always open and close FTP sessions to the iNews server properly. It is a production server sitting
-    at the core of the Newsroom and arguably the most important.
-
+    
     """
     gb_log = kp.ListProperty()  # lists used to store the output console text
     lk_log = kp.ListProperty()  # ^
